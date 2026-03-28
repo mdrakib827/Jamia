@@ -1,0 +1,282 @@
+import { motion } from "motion/react";
+import { useData } from "../context/DataContext";
+
+export function Home() {
+  const { data, loading } = useData();
+
+  if (loading || !data) return <div className="min-h-screen flex items-center justify-center font-bengali">লোড হচ্ছে...</div>;
+
+  return (
+    <div className="flex flex-col">
+      {/* Hero Section */}
+      <section className="relative min-h-[800px] flex items-center overflow-hidden bg-primary-container">
+        <div className="absolute inset-0 arabesque-pattern z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-container/90 to-tertiary/80 z-10"></div>
+        <div className="max-w-7xl mx-auto px-8 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-20">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-white"
+          >
+            <div className="mb-6 opacity-90">
+              <img
+                alt="Bismillah Calligraphy"
+                className="w-48 h-auto mix-blend-screen"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMu0I0-nAJDaXwovvUL2h5E0lfJb2QiBph-NR8_oAyRv1Q3-fJBW3M1dnre4ZITR4zaTtV4uH14LW4Aqk26VWtc3leQbr6yRmlC4bZSBoV73fFaesFfXvjrQApCQWVTSW7pLrZy3Uw4MC27721dCQ9dcwyIxngTJrcVUISP_unAq58uXY1KWjGj-7sOnZA_CMs6rJPvuqIojqLt15Che6qnY2rl6rj2v-u9LtK8Ne_L4mQZSUZ3pf9MRJWgeYnSMid82DodR7LaKA7"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <h1 className="text-display-lg font-bengali font-bold text-6xl lg:text-7xl leading-tight mb-4">
+              {data.settings.siteTitle}
+            </h1>
+            <p className="text-xl md:text-2xl font-bengali text-white/90 mb-10 max-w-xl font-medium">
+              {data.settings.address}
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <button className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-md font-bold text-lg hover:shadow-xl transition-all font-bengali">
+                ভর্তি ফরম
+              </button>
+              <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-md font-bold text-lg hover:bg-white/20 transition-all font-bengali">
+                বিস্তারিত জানুন
+              </button>
+            </div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="hidden lg:block relative"
+          >
+            <div className="w-full h-[600px] rounded-t-full overflow-hidden border-8 border-white/10 shadow-2xl">
+              <img
+                alt="Madrasa Architecture"
+                className="w-full h-full object-cover"
+                src={data.settings.heroImage}
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="absolute -bottom-6 -left-6 bg-white p-8 rounded-xl shadow-2xl max-w-xs">
+              <div className="flex items-center gap-4 mb-2">
+                <span className="material-symbols-outlined text-secondary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>mosque</span>
+                <div className="font-headline font-bold text-2xl text-primary">৫০০+</div>
+              </div>
+              <p className="text-on-surface-variant font-bengali text-sm font-medium">প্রতি বছর কৃতি ছাত্ররা কামিয়াব হয়ে দেশ ও জাতির সেবা করছে</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Quick Access Section */}
+      <section className="py-12 -mt-16 relative z-30 max-w-5xl mx-auto px-8 w-full">
+        <div className="bg-white rounded-2xl shadow-[0_32px_64px_-12px_rgba(0,93,66,0.12)] p-8 grid grid-cols-1 md:grid-cols-3 gap-8 items-center border border-outline-variant/20">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined">edit_note</span>
+            </div>
+            <div>
+              <h3 className="font-bengali font-bold text-lg text-on-surface">অনলাইন আবেদন</h3>
+              <p className="text-xs text-on-surface-variant uppercase tracking-wider font-sans">Apply Online</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary">
+              <span className="material-symbols-outlined">description</span>
+            </div>
+            <div>
+              <h3 className="font-bengali font-bold text-lg text-on-surface">ভর্তি নির্দেশিকা</h3>
+              <p className="text-xs text-on-surface-variant uppercase tracking-wider font-sans">Admission Guide</p>
+            </div>
+          </div>
+          <div>
+            <button className="w-full bg-primary text-on-primary py-3 rounded-md font-bengali font-bold text-lg hover:bg-tertiary transition-colors">
+              এখনই আবেদন করুন
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Departments Section */}
+      <section className="py-24 bg-surface-container-low relative overflow-hidden">
+        <div className="absolute inset-0 arabesque-pattern opacity-10 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-8 relative">
+          <div className="text-center mb-16">
+            <span className="text-secondary font-bold tracking-widest uppercase text-sm font-sans">Our Departments</span>
+            <h2 className="text-4xl font-bengali font-bold text-on-surface mt-2 mb-4">শিক্ষা বিভাগসমূহ</h2>
+            <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { title: "হিফজুল কুরআন বিভাগ", desc: "সহীহ ও সুন্দর তিলাওয়াতের মাধ্যমে পবিত্র কুরআন হিফজ করার অনন্য বিভাগ।", icon: "menu_book" },
+              { title: "মাওলানা কোর্স (দাওরায়ে হাদীস)", desc: "কুরআন, সুন্নাহ ও ইসলামী ফিকহ-এর উপর উচ্চতর গবেষণামূলক মাস্টার্স সমমানের কোর্স।", icon: "school" },
+              { title: "ইফতা ও গবেষণা বিভাগ", desc: "সমসাময়িক মাসআলা-মাসায়েল ও ফতোয়া প্রদানের বিশেষ প্রশিক্ষণ বিভাগ।", icon: "gavel" },
+            ].map((dept, idx) => (
+              <motion.div
+                key={idx}
+                whileHover={{ y: -10 }}
+                className="bg-surface-container-lowest p-8 rounded-xl shadow-sm hover:shadow-xl transition-all group border border-outline-variant/10"
+              >
+                <div className="w-16 h-16 mihrab-shape bg-tertiary-fixed/30 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                  <span className="material-symbols-outlined text-3xl">{dept.icon}</span>
+                </div>
+                <h3 className="text-2xl font-bengali font-bold text-on-surface mb-3">{dept.title}</h3>
+                <p className="text-on-surface-variant leading-relaxed mb-6 font-bengali">{dept.desc}</p>
+                <a className="inline-flex items-center gap-2 text-primary font-bold hover:gap-4 transition-all" href="#">
+                  বিস্তারিত দেখুন <span className="material-symbols-outlined">arrow_right_alt</span>
+                </a>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Notice Board & Quote Section */}
+      <section className="py-24 max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="lg:col-span-2">
+          <div className="flex justify-between items-end mb-8">
+            <div>
+              <h2 className="text-3xl font-bengali font-bold text-on-surface">নোটিশ বোর্ড</h2>
+              <p className="text-on-surface-variant font-sans text-sm mt-1">Latest Academic Announcements</p>
+            </div>
+            <a className="text-primary font-bold text-sm border-b-2 border-primary/20 hover:border-primary transition-all" href="#">সকল নোটিশ</a>
+          </div>
+          <div className="space-y-4">
+            {data.notices.map((notice: any, idx: number) => (
+              <div key={idx} className="bg-white p-6 rounded-xl border border-outline-variant/20 hover:bg-tertiary-fixed/10 transition-colors flex gap-6">
+                <div className="flex-shrink-0 w-16 h-16 bg-primary-container rounded-lg flex flex-col items-center justify-center text-white">
+                  <span className="text-xs uppercase font-bold opacity-80">{notice.month}</span>
+                  <span className="text-xl font-bold">{notice.date}</span>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bengali font-bold text-primary mb-1">{notice.title}</h4>
+                  <p className="text-on-surface-variant font-bengali">{notice.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-secondary-fixed rounded-t-full p-8 flex flex-col items-center text-center relative overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-1 bg-secondary"></div>
+          <span className="material-symbols-outlined text-secondary text-5xl mt-12 mb-6" style={{ fontVariationSettings: "'FILL' 1" }}>format_quote</span>
+          <h3 className="text-2xl font-bengali font-bold text-on-secondary-fixed mb-6 leading-relaxed">
+            "তোমাদের মধ্যে সেই ব্যক্তি সর্বোত্তম যে কুরআন শিক্ষা করে এবং অন্যকে শিক্ষা দেয়।"
+          </h3>
+          <div className="w-12 h-0.5 bg-secondary/30 mb-4"></div>
+          <p className="text-on-secondary-fixed-variant font-sans font-bold italic">— আল-হাদিস (বুখারী)</p>
+          <div className="mt-12 w-full">
+            <img
+              alt="Students Reading"
+              className="w-full h-48 object-cover rounded-xl"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBj3Sz0eKsw_lYyv7E8WXudu0gxlCO7I2HC8cD02aO-FEk9Gb_CyRV6h8QCQllyfMlpfLExl3Wu3DLILRVEx36a3J44lpzKUFucEs21_lVLSEvNgZgaqU183PcNCz2fRjH5QofQBaRjigtvhQcRQSVyQJgUzHc8uod78jVTLkkAzue6yDVuCVIS3nsdi2UOuM0ZIqvN9v6HATtujr3Y5kPO0_gCtFUiBemeH1Z-5YTyO_JeHMTus4E6ro6MRC8bCd9xcWFpX2F1OIfp"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Teachers Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bengali font-bold text-on-surface mb-4">আমাদের শিক্ষকবৃন্দ</h2>
+            <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {data.teachers.map((teacher: any) => (
+              <div key={teacher.id} className="text-center group">
+                <div className="relative mb-4 inline-block">
+                  <img src={teacher.image} alt={teacher.name} className="w-40 h-40 rounded-full object-cover border-4 border-primary/10 group-hover:border-primary transition-all duration-300" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                </div>
+                <h3 className="text-xl font-bengali font-bold text-primary">{teacher.name}</h3>
+                <p className="text-on-surface-variant font-bengali text-sm">{teacher.designation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      {data.settings.gallery && data.settings.gallery.length > 0 && (
+        <section className="py-24 bg-surface-container-low">
+          <div className="max-w-7xl mx-auto px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bengali font-bold text-on-surface mb-4">ফটো গ্যালারি</h2>
+              <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {data.settings.gallery.map((img: string, idx: number) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ scale: 1.05 }}
+                  className="aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-white"
+                >
+                  <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Admission Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-4xl font-bengali font-bold text-primary mb-6">ভর্তি সংক্রান্ত তথ্য</h2>
+              <div className="w-20 h-1 bg-secondary mb-8 rounded-full"></div>
+              <div className="prose prose-lg font-bengali text-on-surface-variant leading-relaxed whitespace-pre-line">
+                {data.admissionInfo}
+              </div>
+              <div className="mt-10 flex gap-4">
+                <button className="bg-primary text-on-primary px-8 py-4 rounded-md font-bold text-lg hover:shadow-xl transition-all font-bengali">
+                  অনলাইন আবেদন করুন
+                </button>
+                <button className="border-2 border-primary text-primary px-8 py-4 rounded-md font-bold text-lg hover:bg-primary/5 transition-all font-bengali">
+                  ভর্তি নির্দেশিকা ডাউনলোড
+                </button>
+              </div>
+            </motion.div>
+            <div className="relative">
+              <div className="absolute -inset-4 bg-primary/5 rounded-3xl -rotate-3"></div>
+              <img
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuALBdelbkjrAtF6DXj735PznCUji09M01q9UIuTtNDhsvd7ui1fpuDch-VR_Pvlkl_XwNrqXQm_xOk-DDk6RKS7K8P6bfIo_bi6VrhIlPZadxV-e7LQJSjyAMM5WJdsEe5jz4bhRiVOd-XjkbpelogvzTJqxZT-iJeanPG7Mn1EEHh6nHmb5pywZR2o8mRlPNiUaUC4kzI0tPmGTV9hBmBq_p3n1_V0duTD9sHk18OlRWT8EvR7c7xoYaUnPgiXRoWxpd8BuhoQL9i8"
+                alt="Admission"
+                className="relative rounded-2xl shadow-2xl w-full h-[500px] object-cover"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Donation CTA Section */}
+      <section className="py-20 bg-primary-container text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-primary -skew-x-12 translate-x-1/2 opacity-50"></div>
+        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row items-center justify-between gap-12 relative z-10">
+          <div className="max-w-xl">
+            <h2 className="text-4xl font-bengali font-bold mb-6">দ্বীনি শিক্ষার আলো ছড়িয়ে দিতে আপনার অংশগ্রহণ আমাদের কাম্য</h2>
+            <p className="text-on-primary-container/80 mb-8 text-lg font-bengali leading-relaxed">{data.admissionInfo}</p>
+            <button className="bg-secondary-container text-on-secondary-container px-10 py-4 rounded-md font-bold text-xl hover:bg-secondary-container/80 transition-all font-bengali shadow-lg">
+              অনলাইন দান করুন
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <img alt="Library" className="rounded-xl w-40 h-40 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALBdelbkjrAtF6DXj735PznCUji09M01q9UIuTtNDhsvd7ui1fpuDch-VR_Pvlkl_XwNrqXQm_xOk-DDk6RKS7K8P6bfIo_bi6VrhIlPZadxV-e7LQJSjyAMM5WJdsEe5jz4bhRiVOd-XjkbpelogvzTJqxZT-iJeanPG7Mn1EEHh6nHmb5pywZR2o8mRlPNiUaUC4kzI0tPmGTV9hBmBq_p3n1_V0duTD9sHk18OlRWT8EvR7c7xoYaUnPgiXRoWxpd8BuhoQL9i8" referrerPolicy="no-referrer" />
+              <img alt="Student" className="rounded-xl w-40 h-60 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmQuV9U9PZN3KHleOHMgLT2l1UE0CM5Vm2rhnm37zac2MGUQIIEcjPzll8Q5Uan41UlA4DgW0cTz_aMKX7vnYBuuMTv-vTB0LwTf91-Vuvr8ll4kJcBT9VWbdbqGaYWwyKqGFjII49zyiUt_n6QAzgs4swd3CjBl_eux1-cUHIBMx5ehiV6DCQ2qwxjn1itGYb1pa3FQZ_Ky-4Kz-IH7JOMDgJL5dyhs39M0588YAEyHKAw6S_i41giPs91o5rzcJxRfxTfjNI4Dv4" referrerPolicy="no-referrer" />
+            </div>
+            <div className="space-y-4 pt-8">
+              <img alt="Prayer" className="rounded-xl w-40 h-60 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMdueizx6Sncz4O5AXVS0PN7HsGwJWwzW0FHEVdRYklJ7Se2A293Li1cXvTWH8PG-c-vNtIByqY-oIgCETzSNklhKGGCGxhJLdVpYL42Yz468v56IC4PpMx1G4M2k3SgjhOgn1rEI8ofsrK2WRqfVeDy12dF857_nKpXPCx6B5FahwrTi3TWNJyuJmm_YZzFCxthtDNGN_Q08aqSDqFOLz891ciCCWX9Y08btx7bgOvYl52WhmMkh7I38DLxvr2Ina4fhrhH4J0Ect" referrerPolicy="no-referrer" />
+              <img alt="Campus" className="rounded-xl w-40 h-40 object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIAUF4n_iThVqwd0Kmig7Gmm-VWlLRiIABU2gxdG6M8IH89kCLTVBJho-qFoliPpqiwhLV5mGcQyQIqmHquKMk0is5Uc1tG2M1uxy_k0Nyui_mMCEab01sdNNN292tQt8C611cqR3YXWgzPbKKcja81Nmz1OlRBJz-QxdwzX_wtmbttFD8tT6vV6S9cXvTI5Rw6zRdcUAc0RnXoA23i5xeRlF10nAInvcg6jp9qqhqZN-cDrFj-GoMKbXDp0HisoVG1sta6fTfh1RX" referrerPolicy="no-referrer" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

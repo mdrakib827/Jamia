@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Manrope", sans-serif;
+  --font-bengali: "Hind Siliguri", "Inter", sans-serif;
+
+  --color-primary: #005d42;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #047857;
+  --color-on-primary-container: #9ffdd3;
+  
+  --color-secondary: #904d00;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #fe932c;
+  --color-on-secondary-container: #663500;
+
+  --color-tertiary: #025d44;
+  --color-on-tertiary: #ffffff;
+  
+  --color-background: #f7f9fb;
+  --color-surface: #f7f9fb;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #3e4943;
+  --color-outline: #6e7a73;
+  --color-outline-variant: #bdc9c1;
+
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #eceef0;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-highest: #e0e3e5;
+
+  --color-secondary-fixed: #ffdcc3;
+  --color-on-secondary-fixed: #2f1500;
+  --color-on-secondary-fixed-variant: #6e3900;
+  
+  --color-tertiary-fixed: #a6f2d1;
+  --color-on-tertiary-fixed: #002116;
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-background text-on-surface;
+  }
+}
+
+.islamic-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l2.5 7.5L40 10l-7.5 2.5L30 20l-2.5-7.5L20 10l7.5-2.5L30 0zm0 40l2.5 7.5L40 50l-7.5 2.5L30 60l-2.5-7.5L20 50l7.5-2.5L30 40zM10 20l2.5 7.5L20 30l-7.5 2.5L10 40l-2.5-7.5L0 30l7.5-2.5L10 20zm40 0l2.5 7.5L60 30l-7.5 2.5L50 40l-2.5-7.5L40 30l7.5-2.5L50 20z' fill='%23005d42' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.arabesque-pattern {
+  background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB1b8mRwjWbJVlBjf28Fer00RMNGSut4eQs5UXEQm7eJ8jtrBfpALm6G-6hQGVXH50G7G0L-xUIc1rew23ai4Z6lEE7uiPnnHPXYqJ44Tm2sG96Jc7x0iotNX3yZm8z8_h7lFJ9RVr86UdWfUsygqbtIPxxV9c86P8LXfutItRqwQcdf2JhR0UzfR9M4DyWA-ux4GczHJqX01dzp-QGEQCmTMExhtljaMfmKFHcTtflx-OyC3U2q8vQ-c4bykuRef8zCdvq08mpT-sL);
+  opacity: 0.03;
+}
+
+.mihrab-shape {
+  clip-path: polygon(0% 100%, 0% 20%, 50% 0%, 100% 20%, 100% 100%);
+}
+
+.arch-mask {
+  clip-path: ellipse(100% 100% at 50% 100%);
+}
