@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Lock, Eye, EyeOff, HelpCircle } from "lucide-react";
 
 export function AdminLogin() {
@@ -24,10 +24,13 @@ export function AdminLogin() {
       });
 
       if (res.ok) {
+        const data = await res.json();
         localStorage.setItem("isAdmin", "true");
+        localStorage.setItem("adminUser", JSON.stringify(data.user));
         navigate("/admin/dashboard");
       } else {
-        setError("ভুল ইমেইল বা পাসওয়ার্ড! আবার চেষ্টা করুন।");
+        const data = await res.json();
+        setError(data.error || "ভুল ইমেইল বা পাসওয়ার্ড! আবার চেষ্টা করুন।");
       }
     } catch (err) {
       setError("সার্ভারে সমস্যা হচ্ছে। পরে চেষ্টা করুন।");
@@ -36,8 +39,21 @@ export function AdminLogin() {
     }
   };
 
-  const handleForgotPassword = () => {
-    alert("পাসওয়ার্ড ভুলে গেলে অনুগ্রহ করে মাদরাসা কর্তৃপক্ষের সাথে যোগাযোগ করুন অথবা ডেভেলপারকে জানান।");
+  const handleForgotPassword = async () => {
+    const userEmail = prompt("আপনার নিবন্ধিত ইমেইল অ্যাড্রেসটি লিখুন:");
+    if (!userEmail) return;
+
+    try {
+      const res = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail }),
+      });
+      const data = await res.json();
+      alert(data.message || data.error);
+    } catch (err) {
+      alert("অনুরোধটি পাঠানো সম্ভব হয়নি। পরে চেষ্টা করুন।");
+    }
   };
 
   return (
@@ -89,7 +105,13 @@ export function AdminLogin() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-between items-center">
+            <Link
+              to="/admin/register"
+              className="text-sm font-bengali text-primary hover:underline"
+            >
+              নতুন অ্যাডমিন রেজিস্ট্রেশন
+            </Link>
             <button
               type="button"
               onClick={handleForgotPassword}

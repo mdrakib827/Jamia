@@ -1,8 +1,12 @@
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useData } from "../context/DataContext";
+import { useState } from "react";
+import { X, ZoomIn } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Home() {
   const { data, loading } = useData();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   if (loading || !data) return <div className="min-h-screen flex items-center justify-center font-bengali">লোড হচ্ছে...</div>;
 
@@ -19,14 +23,29 @@ export function Home() {
             transition={{ duration: 0.8 }}
             className="text-white"
           >
-            <div className="mb-6 opacity-90">
-              <img
-                alt="Bismillah Calligraphy"
-                className="w-48 h-auto mix-blend-screen"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMu0I0-nAJDaXwovvUL2h5E0lfJb2QiBph-NR8_oAyRv1Q3-fJBW3M1dnre4ZITR4zaTtV4uH14LW4Aqk26VWtc3leQbr6yRmlC4bZSBoV73fFaesFfXvjrQApCQWVTSW7pLrZy3Uw4MC27721dCQ9dcwyIxngTJrcVUISP_unAq58uXY1KWjGj-7sOnZA_CMs6rJPvuqIojqLt15Che6qnY2rl6rj2v-u9LtK8Ne_L4mQZSUZ3pf9MRJWgeYnSMid82DodR7LaKA7"
-                referrerPolicy="no-referrer"
-              />
-            </div>
+            {data.settings.logo ? (
+              <div className="mb-6 opacity-90">
+                <div className="bg-white rounded-lg p-4 shadow-2xl inline-block">
+                  <img
+                    alt="Madrasa Logo"
+                    className="w-32 h-32 object-contain"
+                    src={data.settings.logo}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://lh3.googleusercontent.com/aida-public/AB6AXuCMu0I0-nAJDaXwovvUL2h5E0lfJb2QiBph-NR8_oAyRv1Q3-fJBW3M1dnre4ZITR4zaTtV4uH14LW4Aqk26VWtc3leQbr6yRmlC4bZSBoV73fFaesFfXvjrQApCQWVTSW7pLrZy3Uw4MC27721dCQ9dcwyIxngTJrcVUISP_unAq58uXY1KWjGj-7sOnZA_CMs6rJPvuqIojqLt15Che6qnY2rl6rj2v-u9LtK8Ne_L4mQZSUZ3pf9MRJWgeYnSMid82DodR7LaKA7";
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="mb-6 opacity-90">
+                <div className="bg-white rounded-lg p-4 shadow-2xl inline-block">
+                  <div className="w-32 h-32 flex items-center justify-center text-primary/20">
+                    <span className="material-symbols-outlined text-4xl">school</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <h1 className="text-display-lg font-bengali font-bold text-6xl lg:text-7xl leading-tight mb-4">
               {data.settings.siteTitle}
             </h1>
@@ -34,9 +53,9 @@ export function Home() {
               {data.settings.address}
             </p>
             <div className="flex flex-wrap gap-4">
-              <button className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-md font-bold text-lg hover:shadow-xl transition-all font-bengali">
+              <Link to="/admission" className="bg-secondary-container text-on-secondary-container px-8 py-4 rounded-md font-bold text-lg hover:shadow-xl transition-all font-bengali">
                 ভর্তি ফরম
-              </button>
+              </Link>
               <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-md font-bold text-lg hover:bg-white/20 transition-all font-bengali">
                 বিস্তারিত জানুন
               </button>
@@ -48,18 +67,27 @@ export function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="hidden lg:block relative"
           >
-            <div className="w-full h-[600px] rounded-t-full overflow-hidden border-8 border-white/10 shadow-2xl">
-              <img
-                alt="Madrasa Architecture"
-                className="w-full h-full object-cover"
-                src={data.settings.heroImage}
-                referrerPolicy="no-referrer"
-              />
+            <div className="w-full h-[600px] rounded-t-full overflow-hidden border-8 border-white/10 shadow-2xl bg-white/5">
+              {data.settings.heroImage ? (
+                <img
+                  alt="Madrasa Architecture"
+                  className="w-full h-full object-cover"
+                  src={data.settings.heroImage}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://lh3.googleusercontent.com/aida-public/AB6AXuBJcxE_WaNYk8wxz2Me4i9AQSv8iDrQualK7rRMUDTazl5k_4TdRwpFgNEVGvtc-wlzxpLmwlgITaQGqaNAhpZjavwNuWIM_-HYT-dBEVean4UsaYe6JgEivd4m7S9FlvixPIoFZhMdyeyhLl6yVBJKI4dv0WsDJNl-rdEbH5JN0Z-WETzTJRJgW03FfmwLaTOa4H-zq7fROrsW0PH1HqEWEIk6-aF98dsPt4bj1cB9FRrm4j-PSEanPh-bsOSUV4LTfoAukUxHTyRf";
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/20">
+                  <span className="material-symbols-outlined text-6xl">image</span>
+                </div>
+              )}
             </div>
             <div className="absolute -bottom-6 -left-6 bg-white p-8 rounded-xl shadow-2xl max-w-xs">
               <div className="flex items-center gap-4 mb-2">
                 <span className="material-symbols-outlined text-secondary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>mosque</span>
-                <div className="font-headline font-bold text-2xl text-primary">৫০০+</div>
+                <div className="font-headline font-bold text-2xl text-primary">500+</div>
               </div>
               <p className="text-on-surface-variant font-bengali text-sm font-medium">প্রতি বছর কৃতি ছাত্ররা কামিয়াব হয়ে দেশ ও জাতির সেবা করছে</p>
             </div>
@@ -89,9 +117,9 @@ export function Home() {
             </div>
           </div>
           <div>
-            <button className="w-full bg-primary text-on-primary py-3 rounded-md font-bengali font-bold text-lg hover:bg-tertiary transition-colors">
+            <Link to="/admission" className="w-full bg-primary text-on-primary py-3 rounded-md font-bengali font-bold text-lg hover:bg-tertiary transition-colors flex items-center justify-center">
               এখনই আবেদন করুন
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -183,14 +211,16 @@ export function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {data.teachers.map((teacher: any) => (
-              <div key={teacher.id} className="text-center group">
+              <Link key={teacher.id} to={`/teacher/${teacher.id}`} className="text-center group block">
                 <div className="relative mb-4 inline-block">
                   <img src={teacher.image} alt={teacher.name} className="w-40 h-40 rounded-full object-cover border-4 border-primary/10 group-hover:border-primary transition-all duration-300" />
-                  <div className="absolute inset-0 bg-primary/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                  <div className="absolute inset-0 bg-primary/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold bg-primary/60 px-2 py-1 rounded-full backdrop-blur-sm">বিস্তারিত দেখুন</span>
+                  </div>
                 </div>
                 <h3 className="text-xl font-bengali font-bold text-primary">{teacher.name}</h3>
                 <p className="text-on-surface-variant font-bengali text-sm">{teacher.designation}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -203,19 +233,62 @@ export function Home() {
             <div className="text-center mb-16">
               <h2 className="text-4xl font-bengali font-bold text-on-surface mb-4">ফটো গ্যালারি</h2>
               <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
+              <p className="mt-4 text-on-surface-variant font-bengali">ছবির ওপর ক্লিক করে বড় করে দেখুন</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {data.settings.gallery.map((img: string, idx: number) => (
                 <motion.div
                   key={idx}
-                  whileHover={{ scale: 1.05 }}
-                  className="aspect-square rounded-xl overflow-hidden shadow-lg border-4 border-white"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: idx * 0.05 }}
+                  onClick={() => setSelectedImage(img)}
+                  className="relative group cursor-pointer aspect-[4/3] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border-4 border-white bg-surface-container-highest"
                 >
-                  <img src={img} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                  <img 
+                    src={img} 
+                    alt={`Gallery ${idx}`} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="bg-white/20 backdrop-blur-md p-4 rounded-full text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                      <ZoomIn size={28} />
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </div>
+
+          {/* Lightbox */}
+          <AnimatePresence>
+            {selectedImage && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedImage(null)}
+                className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center p-4 md:p-10 cursor-zoom-out"
+              >
+                <button 
+                  className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors p-2 bg-white/10 rounded-full"
+                  onClick={() => setSelectedImage(null)}
+                >
+                  <X size={32} />
+                </button>
+                <motion.img
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  src={selectedImage}
+                  alt="Full view"
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
       )}
 
@@ -234,9 +307,9 @@ export function Home() {
                 {data.admissionInfo}
               </div>
               <div className="mt-10 flex gap-4">
-                <button className="bg-primary text-on-primary px-8 py-4 rounded-md font-bold text-lg hover:shadow-xl transition-all font-bengali">
+                <Link to="/admission" className="bg-primary text-on-primary px-8 py-4 rounded-md font-bold text-lg hover:shadow-xl transition-all font-bengali">
                   অনলাইন আবেদন করুন
-                </button>
+                </Link>
                 <button className="border-2 border-primary text-primary px-8 py-4 rounded-md font-bold text-lg hover:bg-primary/5 transition-all font-bengali">
                   ভর্তি নির্দেশিকা ডাউনলোড
                 </button>

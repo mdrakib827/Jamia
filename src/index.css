@@ -39,6 +39,35 @@
   --color-on-tertiary-fixed: #002116;
 }
 
+/* Custom Scrollbar */
+html {
+  overflow-y: scroll;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  display: block !important;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #005d42;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #005d42 #f1f1f1;
+}
+
 @layer base {
   body {
     @apply font-sans bg-background text-on-surface;
@@ -60,4 +89,19 @@
 
 .arch-mask {
   clip-path: ellipse(100% 100% at 50% 100%);
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  @page {
+    margin: 1cm;
+  }
+  
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
 }
