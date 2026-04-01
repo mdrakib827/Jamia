@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Settings, Bell, Users, GraduationCap, LogOut, Upload, Plus, Trash2, Save, Check, X, UserPlus, FileText, ExternalLink, Image as ImageIcon, Crop, ZoomIn, Search, Shield, Key, ArrowUp, ArrowDown, User } from "lucide-react";
+import { motion } from "motion/react";
+import { Settings, Bell, Users, GraduationCap, LogOut, Upload, Plus, Trash2, Save, Check, X, UserPlus, FileText, ExternalLink, Image as ImageIcon, Crop, ZoomIn, Search, Shield, Key, ArrowUp, ArrowDown, User, Download, FileSpreadsheet, BookOpen, LayoutGrid, Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { useData } from "../context/DataContext";
 import { ImageEditor } from "../components/ImageEditor";
+import * as XLSX from 'xlsx';
 
 export function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("settings");
@@ -25,6 +26,7 @@ export function AdminDashboard() {
     year: new Date().getFullYear().toString(),
     studentNameBn: "",
     fatherName: "",
+    department: "",
     classToAdmit: "",
     roll: "",
     contactNumber: "",
@@ -34,13 +36,24 @@ export function AdminDashboard() {
   const [isEditStudentModalOpen, setIsEditStudentModalOpen] = useState(false);
   const [editingStudentData, setEditingStudentData] = useState<any>(null);
   
+  const [newTransaction, setNewTransaction] = useState({
+    date: new Date().toISOString().split('T')[0],
+    type: "income",
+    category: "",
+    amount: "",
+    description: ""
+  });
+  
   const [studentFilterYear, setStudentFilterYear] = useState(new Date().getFullYear().toString());
+  const [studentFilterDept, setStudentFilterDept] = useState("");
   const [studentFilterJamat, setStudentFilterJamat] = useState("");
   const [resYear, setResYear] = useState(new Date().getFullYear().toString());
   const [resExam, setResExam] = useState("বার্ষিক পরীক্ষা");
+  const [resDept, setResDept] = useState("");
   const [resJamat, setResJamat] = useState("");
   const [resSubjects, setResSubjects] = useState("কুরআন, হাদীস, ফিকহ, বাংলা");
   const [viewResults, setViewResults] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [securityData, setSecurityData] = useState({
     oldPassword: "",
@@ -161,6 +174,11 @@ export function AdminDashboard() {
       if (res.ok) {
         setAdmissions(prev => prev.map(app => app.id === id ? { ...app, roll } : app));
         alert("রোল নম্বর সফলভাবে আপডেট হয়েছে।");
+        
+        // Trigger data refresh to update results if needed
+        const channel = new BroadcastChannel("app_data_sync");
+        channel.postMessage("refresh");
+        channel.close();
       } else {
         alert("রোল নম্বর আপডেট করা সম্ভব হয়নি।");
       }
@@ -180,6 +198,11 @@ export function AdminDashboard() {
       if (res.ok) {
         setAdmissions(prev => prev.map(a => a.id === id ? { ...a, photoUrl } : a));
         alert("ছবি আপডেট করা হয়েছে।");
+        
+        // Trigger data refresh to update results if needed
+        const channel = new BroadcastChannel("app_data_sync");
+        channel.postMessage("refresh");
+        channel.close();
       } else {
         alert("ছবি আপডেট করা সম্ভব হয়নি।");
       }
@@ -190,8 +213,8 @@ export function AdminDashboard() {
   };
 
   const handleUpdateStudent = async () => {
-    if (!editingStudentData.studentNameBn || !editingStudentData.classToAdmit) {
-      alert("নাম এবং জামাত আবশ্যক।");
+    if (!editingStudentData.studentNameBn || !editingStudentData.department || !editingStudentData.classToAdmit) {
+      alert("নাম, বিভাগ এবং জামাত আবশ্যক।");
       return;
     }
     try {
@@ -205,6 +228,11 @@ export function AdminDashboard() {
         setIsEditStudentModalOpen(false);
         setEditingStudentData(null);
         alert("ছাত্রের তথ্য আপডেট করা হয়েছে।");
+        
+        // Trigger data refresh to update results if needed
+        const channel = new BroadcastChannel("app_data_sync");
+        channel.postMessage("refresh");
+        channel.close();
       } else {
         alert("তথ্য আপডেট করা সম্ভব হয়নি।");
       }
@@ -233,6 +261,7 @@ export function AdminDashboard() {
           year: new Date().getFullYear().toString(),
           studentNameBn: "",
           fatherName: "",
+          department: "",
           classToAdmit: "",
           roll: "",
           contactNumber: "",
@@ -253,31 +282,53 @@ export function AdminDashboard() {
     const students = admissions.filter(a => a.status === "approved" && a.classToAdmit === resJamat);
     const subjects = resSubjects.split(',').map(s => s.trim()).filter(Boolean);
     
-    const newViewResults = students.map(student => {
-      let existing = data.results.find((r: any) => r.year === resYear && r.exam === resExam && r.class === resJamat && (r.admissionId === student.id || r.name === student.studentNameBn));
+    const newViewResults: any[] = [];
+    const processedResultIds = new Set();
+    
+    // 1. Process students from admissions
+    students.forEach(student => {
+      let existing = data.results.find((r: any) => r.year === resYear && r.exam === resExam && r.class === resJamat && (r.admissionId === student.id || (!r.admissionId && r.name === student.studentNameBn)));
       
       if (existing) {
+        processedResultIds.add(existing.id);
         const updatedMarks = { ...existing.marks };
         subjects.forEach(sub => {
           if (updatedMarks[sub] === undefined) updatedMarks[sub] = 0;
         });
-        return { ...existing, admissionId: student.id, roll: student.roll || existing.roll, fatherName: student.fatherName, marks: updatedMarks };
+        newViewResults.push({ ...existing, admissionId: student.id, name: student.studentNameBn, roll: student.roll || existing.roll, fatherName: student.fatherName, photoUrl: student.photoUrl, marks: updatedMarks });
+      } else {
+        newViewResults.push({
+          id: Date.now() + Math.random(),
+          admissionId: student.id,
+          roll: student.roll || "",
+          name: student.studentNameBn,
+          fatherName: student.fatherName,
+          photoUrl: student.photoUrl,
+          class: resJamat,
+          exam: resExam,
+          year: resYear,
+          marks: subjects.reduce((acc: any, sub) => ({ ...acc, [sub]: 0 }), {}),
+          total: 0,
+          position: 0,
+          published: false
+        });
       }
-      
-      return {
-        id: Date.now() + Math.random(),
-        admissionId: student.id,
-        roll: student.roll || "",
-        name: student.studentNameBn,
-        fatherName: student.fatherName,
-        class: resJamat,
-        exam: resExam,
-        year: resYear,
-        marks: subjects.reduce((acc: any, sub) => ({ ...acc, [sub]: 0 }), {}),
-        total: 0,
-        position: 0,
-        published: false
-      };
+    });
+
+    // 2. Add any other results for this year/exam/class that aren't tied to the above students
+    const otherResults = data.results.filter((r: any) => 
+      r.year === resYear && 
+      r.exam === resExam && 
+      r.class === resJamat && 
+      !processedResultIds.has(r.id)
+    );
+
+    otherResults.forEach((r: any) => {
+      const updatedMarks = { ...r.marks };
+      subjects.forEach(sub => {
+        if (updatedMarks[sub] === undefined) updatedMarks[sub] = 0;
+      });
+      newViewResults.push({ ...r, marks: updatedMarks });
     });
     
     setViewResults(newViewResults);
@@ -296,6 +347,11 @@ export function AdminDashboard() {
       if (res.ok) {
         setAdmissions(prev => prev.map(app => app.id === id ? { ...app, status, ...(roll !== undefined && { roll }) } : app));
         alert("স্ট্যাটাস আপডেট করা হয়েছে।");
+        
+        // Trigger data refresh to update results if needed
+        const channel = new BroadcastChannel("app_data_sync");
+        channel.postMessage("refresh");
+        channel.close();
       }
     } catch (err) {
       alert("আপডেট করা সম্ভব হয়নি।");
@@ -342,19 +398,95 @@ export function AdminDashboard() {
   };
 
   const handleSaveResults = async () => {
-    let updatedResults = [...(data.results || [])];
+    let allOtherResults = (data.results || []).filter((r: any) => 
+      !(r.year === resYear && r.exam === resExam && r.class === resJamat)
+    );
     
-    viewResults.forEach(vr => {
-      const idx = updatedResults.findIndex(r => r.year === resYear && r.exam === resExam && r.class === resJamat && (r.admissionId === vr.admissionId || r.name === vr.name));
-      if (idx >= 0) {
-        updatedResults[idx] = vr;
-      } else {
-        updatedResults.push(vr);
-      }
-    });
+    let updatedResults = [...allOtherResults, ...viewResults];
     
     setData({ ...data, results: updatedResults });
     await handleSave("results", updatedResults);
+  };
+
+  const handleDownloadTemplate = () => {
+    if (!resJamat || !resExam || !resYear) {
+      alert("দয়া করে বছর, পরীক্ষা এবং জামাত নির্বাচন করুন।");
+      return;
+    }
+    const subjects = resSubjects.split(',').map(s => s.trim()).filter(Boolean);
+    const headers = ["Roll", "Name", "Father Name", ...subjects, "Total", "Position"];
+    const ws = XLSX.utils.aoa_to_sheet([headers]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, `${resJamat}_${resExam}_${resYear}_Template.xlsx`);
+  };
+
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!resJamat || !resExam || !resYear) {
+      alert("দয়া করে বছর, পরীক্ষা এবং জামাত নির্বাচন করুন।");
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target?.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const excelData = XLSX.utils.sheet_to_json(ws);
+
+        const subjects = resSubjects.split(',').map(s => s.trim()).filter(Boolean);
+        
+        const newResults = excelData.map((row: any) => {
+          const marks: Record<string, number> = {};
+          let total = 0;
+          subjects.forEach(sub => {
+            const mark = parseInt(row[sub]) || 0;
+            marks[sub] = mark;
+            total += mark;
+          });
+
+          return {
+            id: Date.now() + Math.random(),
+            roll: String(row["Roll"] || ""),
+            name: String(row["Name"] || ""),
+            fatherName: String(row["Father Name"] || ""),
+            class: resJamat,
+            exam: resExam,
+            year: resYear,
+            marks,
+            total: parseInt(row["Total"]) || total,
+            position: parseInt(row["Position"]) || 0,
+            published: true
+          };
+        });
+
+        const res = await fetch("/api/results/bulk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newResults })
+        });
+
+        if (res.ok) {
+          alert("সফলভাবে এক্সেল থেকে রেজাল্ট আপলোড হয়েছে!");
+          const channel = new BroadcastChannel("app_data_sync");
+          channel.postMessage("refresh");
+          channel.close();
+          window.location.reload();
+        } else {
+          alert("আপলোড ব্যর্থ হয়েছে।");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("ফাইল প্রসেস করতে সমস্যা হয়েছে। সঠিক টেমপ্লেট ব্যবহার করেছেন কিনা নিশ্চিত করুন।");
+      }
+    };
+    reader.readAsBinaryString(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSave = async (type: string, payload: any, silent: boolean = false) => {
@@ -456,6 +588,9 @@ export function AdminDashboard() {
         <nav className="flex flex-col gap-2">
           {[
             { id: "settings", label: "সেটিংস", icon: Settings },
+            { id: "about", label: "আমাদের সম্পর্কে", icon: BookOpen },
+            { id: "departments", label: "বিভাগসমূহ", icon: LayoutGrid },
+            { id: "hisab", label: "হিসাব সেকশন", icon: Wallet },
             { id: "gallery", label: "গ্যালারি", icon: ImageIcon },
             { id: "security", label: "নিরাপত্তা", icon: Shield },
             { id: "notices", label: "নোটিশ বোর্ড", icon: Bell },
@@ -772,12 +907,288 @@ export function AdminDashboard() {
                   </div>
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ফোন নম্বর (কমা দিয়ে একাধিক)</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans"
+                    value={data.settings.phone || ""}
+                    onChange={(e) => setData({ ...data, settings: { ...data.settings, phone: e.target.value } })}
+                    placeholder="যেমন: 01700-000000, 01800-000000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ইমেইল ঠিকানা</label>
+                  <input
+                    type="email"
+                    className="w-full px-4 py-3 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans"
+                    value={data.settings.email || ""}
+                    onChange={(e) => setData({ ...data, settings: { ...data.settings, email: e.target.value } })}
+                    placeholder="যেমন: info@madrasa.edu"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bengali font-bold text-on-surface mb-2">গুগল ম্যাপ এমবেড লিঙ্ক (Embed URL)</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans"
+                  value={data.settings.mapUrl || ""}
+                  onChange={(e) => setData({ ...data, settings: { ...data.settings, mapUrl: e.target.value } })}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                />
+                <p className="mt-1 text-xs text-on-surface-variant font-bengali">গুগল ম্যাপ থেকে Share {">"} Embed a map {">"} src লিঙ্কের অংশটুকু এখানে দিন।</p>
+              </div>
               <button
                 onClick={() => handleSave("settings", data.settings)}
                 className="bg-primary text-on-primary px-8 py-3 rounded-lg font-bengali font-bold text-lg flex items-center gap-2 hover:shadow-lg transition-all"
               >
                 <Save size={20} /> সেটিংস সেভ করুন
               </button>
+            </div>
+          )}
+
+          {activeTab === "about" && (
+            <div className="space-y-8 max-w-4xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bengali font-bold text-primary">আমাদের সম্পর্কে (About Us) এডিট করুন</h2>
+                <button
+                  onClick={() => handleSave("about", data.about)}
+                  className="bg-primary text-on-primary px-6 py-2 rounded-lg font-bengali font-bold flex items-center gap-2 hover:shadow-lg transition-all"
+                >
+                  <Save size={18} /> সেভ করুন
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 space-y-4">
+                  <h3 className="font-bengali font-bold text-lg text-primary border-b pb-2">হিরো সেকশন</h3>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">প্রধান শিরোনাম</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.heroTitle || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, heroTitle: e.target.value } })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">উপ-শিরোনাম</label>
+                    <textarea
+                      rows={3}
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.heroSubtitle || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, heroSubtitle: e.target.value } })}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 space-y-4">
+                  <h3 className="font-bengali font-bold text-lg text-primary border-b pb-2">ইতিহাস সেকশন</h3>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ইতিহাস শিরোনাম</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.historyTitle || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, historyTitle: e.target.value } })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ইতিহাস বর্ণনা</label>
+                    <textarea
+                      rows={6}
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.historyContent || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, historyContent: e.target.value } })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 space-y-4">
+                  <h3 className="font-bengali font-bold text-lg text-primary border-b pb-2">লক্ষ্য ও উদ্দেশ্য</h3>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">লক্ষ্য (Mission) শিরোনাম</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.missionTitle || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, missionTitle: e.target.value } })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">লক্ষ্য বর্ণনা</label>
+                    <textarea
+                      rows={4}
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.missionContent || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, missionContent: e.target.value } })}
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">উদ্দেশ্য (Vision) শিরোনাম</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.visionTitle || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, visionTitle: e.target.value } })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">উদ্দেশ্য বর্ণনা</label>
+                    <textarea
+                      rows={4}
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.visionContent || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, visionContent: e.target.value } })}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 space-y-4">
+                  <h3 className="font-bengali font-bold text-lg text-primary border-b pb-2">মুহতামিম বাণী ও সুযোগ-সুবিধা</h3>
+                  <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">মুহতামিম বাণী</label>
+                    <textarea
+                      rows={4}
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      value={data.about?.principalQuote || ""}
+                      onChange={(e) => setData({ ...data, about: { ...data.about, principalQuote: e.target.value } })}
+                    />
+                  </div>
+                  
+                  <div className="pt-4">
+                    <h4 className="font-bengali font-bold text-md text-on-surface mb-4">সুযোগ-সুবিধাসমূহ</h4>
+                    <div className="space-y-4">
+                      {data.about?.facilities?.map((facility: any, idx: number) => (
+                        <div key={idx} className="p-4 border border-outline-variant/20 rounded-lg bg-surface-container-low">
+                          <div className="grid grid-cols-2 gap-2 mb-2">
+                            <input
+                              type="text"
+                              placeholder="শিরোনাম"
+                              className="px-3 py-1 rounded border border-outline-variant text-sm font-bengali"
+                              value={facility.title}
+                              onChange={(e) => {
+                                const newFacilities = [...data.about.facilities];
+                                newFacilities[idx].title = e.target.value;
+                                setData({ ...data, about: { ...data.about, facilities: newFacilities } });
+                              }}
+                            />
+                            <input
+                              type="text"
+                              placeholder="আইকন (Lucide icon name)"
+                              className="px-3 py-1 rounded border border-outline-variant text-sm font-sans"
+                              value={facility.icon}
+                              onChange={(e) => {
+                                const newFacilities = [...data.about.facilities];
+                                newFacilities[idx].icon = e.target.value;
+                                setData({ ...data, about: { ...data.about, facilities: newFacilities } });
+                              }}
+                            />
+                          </div>
+                          <textarea
+                            placeholder="বর্ণনা"
+                            className="w-full px-3 py-1 rounded border border-outline-variant text-sm font-bengali"
+                            rows={2}
+                            value={facility.desc}
+                            onChange={(e) => {
+                              const newFacilities = [...data.about.facilities];
+                              newFacilities[idx].desc = e.target.value;
+                              setData({ ...data, about: { ...data.about, facilities: newFacilities } });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "departments" && (
+            <div className="space-y-8 max-w-4xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bengali font-bold text-primary">শিক্ষা বিভাগসমূহ এডিট করুন</h2>
+                <button
+                  onClick={() => handleSave("departments", data.departments)}
+                  className="bg-primary text-on-primary px-6 py-2 rounded-lg font-bengali font-bold flex items-center gap-2 hover:shadow-lg transition-all"
+                >
+                  <Save size={18} /> সেভ করুন
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {data.departments?.map((dept: any, idx: number) => (
+                  <div key={idx} className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 space-y-4 relative group">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-bengali font-bold text-lg text-primary">বিভাগ {idx + 1}</h3>
+                      <button
+                        onClick={() => {
+                          const newDepts = data.departments.filter((_: any, i: number) => i !== idx);
+                          setData({ ...data, departments: newDepts });
+                        }}
+                        className="text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">বিভাগের নাম</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                        value={dept.title}
+                        onChange={(e) => {
+                          const newDepts = [...data.departments];
+                          newDepts[idx].title = e.target.value;
+                          setData({ ...data, departments: newDepts });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">আইকন (Material icon name)</label>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans"
+                        value={dept.icon}
+                        onChange={(e) => {
+                          const newDepts = [...data.departments];
+                          newDepts[idx].icon = e.target.value;
+                          setData({ ...data, departments: newDepts });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">সংক্ষিপ্ত বর্ণনা</label>
+                      <textarea
+                        rows={3}
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                        value={dept.desc}
+                        onChange={(e) => {
+                          const newDepts = [...data.departments];
+                          newDepts[idx].desc = e.target.value;
+                          setData({ ...data, departments: newDepts });
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={() => {
+                    const newDepts = [...(data.departments || []), { title: "", desc: "", icon: "school" }];
+                    setData({ ...data, departments: newDepts });
+                  }}
+                  className="border-2 border-dashed border-outline-variant rounded-xl p-6 flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all"
+                >
+                  <Plus size={32} />
+                  <span className="font-bengali font-bold mt-2">নতুন বিভাগ যোগ করুন</span>
+                </button>
+              </div>
             </div>
           )}
 
@@ -952,19 +1363,336 @@ export function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === "hisab" && (
+            <div className="space-y-8 max-w-6xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bengali font-bold text-primary">মাদরাসার হিসাব ব্যবস্থাপনা</h2>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      const csvContent = "Date,Type,Category,Amount,Description\n" + 
+                        data.transactions.map((t: any) => `${t.date},${t.type},${t.category},${t.amount},${t.description}`).join("\n");
+                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                      const link = document.createElement("a");
+                      link.href = URL.createObjectURL(blob);
+                      link.download = "hisab_report.csv";
+                      link.click();
+                    }}
+                    className="bg-secondary text-on-secondary px-4 py-2 rounded-lg font-bengali font-bold flex items-center gap-2 hover:shadow-lg transition-all"
+                  >
+                    <Download size={18} /> রিপোর্ট ডাউনলোড
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center">
+                      <TrendingUp size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-on-surface-variant font-bengali">মোট আয়</p>
+                      <h3 className="text-2xl font-bold text-green-600 font-sans">
+                        ৳ {data.transactions?.filter((t: any) => t.type === "income").reduce((acc: number, t: any) => acc + Number(t.amount), 0).toLocaleString()}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center">
+                      <TrendingDown size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-on-surface-variant font-bengali">মোট ব্যয়</p>
+                      <h3 className="text-2xl font-bold text-red-600 font-sans">
+                        ৳ {data.transactions?.filter((t: any) => t.type === "expense").reduce((acc: number, t: any) => acc + Number(t.amount), 0).toLocaleString()}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/10">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                      <Wallet size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-on-surface-variant font-bengali">বর্তমান ব্যালেন্স</p>
+                      <h3 className="text-2xl font-bold text-primary font-sans">
+                        ৳ {(
+                          data.transactions?.filter((t: any) => t.type === "income").reduce((acc: number, t: any) => acc + Number(t.amount), 0) -
+                          data.transactions?.filter((t: any) => t.type === "expense").reduce((acc: number, t: any) => acc + Number(t.amount), 0)
+                        ).toLocaleString()}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Add Transaction Form */}
+                <div className="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/10 h-fit">
+                  <h3 className="text-xl font-bengali font-bold text-primary mb-6">নতুন এন্ট্রি যোগ করুন</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">তারিখ</label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans"
+                        value={newTransaction.date}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ধরণ</label>
+                      <select
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                        value={newTransaction.type}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value })}
+                      >
+                        <option value="income">আয় (Income)</option>
+                        <option value="expense">ব্যয় (Expense)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ক্যাটাগরি</label>
+                      <input
+                        type="text"
+                        placeholder="যেমন: দান, বেতন, খাবার"
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                        value={newTransaction.category}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">পরিমাণ (টাকা)</label>
+                      <input
+                        type="number"
+                        placeholder="0.00"
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans"
+                        value={newTransaction.amount}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bengali font-bold text-on-surface mb-2">বিবরণ</label>
+                      <textarea
+                        rows={3}
+                        placeholder="সংক্ষিপ্ত বিবরণ..."
+                        className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                        value={newTransaction.description}
+                        onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!newTransaction.amount || !newTransaction.category) {
+                          alert("পরিমাণ এবং ক্যাটাগরি আবশ্যক!");
+                          return;
+                        }
+                        const updatedTransactions = [
+                          { ...newTransaction, id: Date.now() },
+                          ...(data.transactions || [])
+                        ];
+                        handleSave("transactions", updatedTransactions);
+                        setNewTransaction({
+                          date: new Date().toISOString().split('T')[0],
+                          type: "income",
+                          category: "",
+                          amount: "",
+                          description: ""
+                        });
+                      }}
+                      className="w-full bg-primary text-on-primary py-3 rounded-lg font-bengali font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <Plus size={20} /> এন্ট্রি সেভ করুন
+                    </button>
+                  </div>
+                </div>
+
+                {/* Transactions List */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-outline-variant/10 overflow-hidden">
+                  <h3 className="text-xl font-bengali font-bold text-primary mb-6">সাম্প্রতিক লেনদেনসমূহ</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-outline-variant/30">
+                          <th className="py-4 px-4 font-bengali font-bold text-on-surface">তারিখ</th>
+                          <th className="py-4 px-4 font-bengali font-bold text-on-surface">ক্যাটাগরি</th>
+                          <th className="py-4 px-4 font-bengali font-bold text-on-surface">বিবরণ</th>
+                          <th className="py-4 px-4 font-bengali font-bold text-on-surface text-right">পরিমাণ</th>
+                          <th className="py-4 px-4 font-bengali font-bold text-on-surface text-center">অ্যাকশন</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.transactions?.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((t: any) => (
+                          <tr key={t.id} className="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
+                            <td className="py-4 px-4 font-sans text-sm">{t.date}</td>
+                            <td className="py-4 px-4">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bengali font-bold ${
+                                t.type === "income" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                              }`}>
+                                {t.category}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4 font-bengali text-sm text-on-surface-variant max-w-[200px] truncate">{t.description}</td>
+                            <td className={`py-4 px-4 font-sans font-bold text-right ${
+                              t.type === "income" ? "text-green-600" : "text-red-600"
+                            }`}>
+                              {t.type === "income" ? "+" : "-"} ৳ {Number(t.amount).toLocaleString()}
+                            </td>
+                            <td className="py-4 px-4 text-center">
+                              <button
+                                onClick={() => {
+                                  if (confirm("আপনি কি নিশ্চিতভাবে এই এন্ট্রিটি ডিলিট করতে চান?")) {
+                                    const updatedTransactions = data.transactions.filter((item: any) => item.id !== t.id);
+                                    handleSave("transactions", updatedTransactions);
+                                  }
+                                }}
+                                className="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-all"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                        {(!data.transactions || data.transactions.length === 0) && (
+                          <tr>
+                            <td colSpan={5} className="py-12 text-center text-on-surface-variant font-bengali">কোনো লেনদেন পাওয়া যায়নি।</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* Donation Settings */}
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-outline-variant/10 mt-12">
+                <div className="flex items-center gap-3 mb-8">
+                  <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
+                    <Wallet size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bengali font-bold text-primary">অনলাইন দান সংক্রান্ত তথ্য (Donation Info)</h3>
+                    <p className="text-on-surface-variant font-bengali text-sm">হোমপেজের "অনলাইন দান করুন" বাটনে এই তথ্যগুলো প্রদর্শিত হবে</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                  <div className="space-y-6">
+                    <h4 className="font-bengali font-bold text-on-surface flex items-center gap-2 border-b border-outline-variant/20 pb-3">
+                      <span className="material-symbols-outlined text-primary">account_balance</span>
+                      ব্যাংক একাউন্ট তথ্য
+                    </h4>
+                    <div className="grid gap-4">
+                      <div>
+                        <label className="block text-sm font-bengali font-bold text-on-surface mb-2">ব্যাংকের নাম</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali bg-surface-container-low"
+                          value={data.donationInfo?.bankName || ""}
+                          onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, bankName: e.target.value } })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bengali font-bold text-on-surface mb-2">একাউন্ট নাম</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali bg-surface-container-low"
+                          value={data.donationInfo?.accountName || ""}
+                          onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, accountName: e.target.value } })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-bengali font-bold text-on-surface mb-2">একাউন্ট নম্বর</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans bg-surface-container-low"
+                            value={data.donationInfo?.accountNumber || ""}
+                            onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, accountNumber: e.target.value } })}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bengali font-bold text-on-surface mb-2">শাখা</label>
+                          <input
+                            type="text"
+                            className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali bg-surface-container-low"
+                            value={data.donationInfo?.branch || ""}
+                            onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, branch: e.target.value } })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <h4 className="font-bengali font-bold text-on-surface flex items-center gap-2 border-b border-outline-variant/20 pb-3">
+                      <span className="material-symbols-outlined text-secondary">smartphone</span>
+                      মোবাইল ব্যাংকিং নম্বর
+                    </h4>
+                    <div className="grid gap-4">
+                      <div>
+                        <label className="block text-sm font-bengali font-bold text-on-surface mb-2">বিকাশ (bKash)</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans bg-surface-container-low"
+                          value={data.donationInfo?.bkash || ""}
+                          onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, bkash: e.target.value } })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bengali font-bold text-on-surface mb-2">নগদ (Nagad)</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans bg-surface-container-low"
+                          value={data.donationInfo?.nagad || ""}
+                          onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, nagad: e.target.value } })}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bengali font-bold text-on-surface mb-2">রকেট (Rocket)</label>
+                        <input
+                          type="text"
+                          className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-sans bg-surface-container-low"
+                          value={data.donationInfo?.rocket || ""}
+                          onChange={(e) => setData({ ...data, donationInfo: { ...data.donationInfo, rocket: e.target.value } })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-10 pt-6 border-t border-outline-variant/20">
+                  <button
+                    onClick={() => handleSave("donation", data.donationInfo)}
+                    className="bg-primary text-on-primary px-10 py-4 rounded-xl font-bengali font-bold text-lg flex items-center gap-3 hover:shadow-xl hover:scale-[1.02] transition-all"
+                  >
+                    <Save size={22} /> দান সংক্রান্ত তথ্য আপডেট করুন
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === "results" && (
             <div className="space-y-6">
               <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/20 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-bengali font-bold text-on-surface mb-2">শিক্ষাবর্ষ</label>
-                    <input
-                      type="text"
+                    <select
                       value={resYear}
                       onChange={(e) => setResYear(e.target.value)}
                       className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
-                      placeholder="যেমন: 2024"
-                    />
+                    >
+                      {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - 15 + i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-bengali font-bold text-on-surface mb-2">পরীক্ষার নাম</label>
@@ -979,16 +1707,58 @@ export function AdminDashboard() {
                     </select>
                   </div>
                   <div>
+                    <label className="block text-sm font-bengali font-bold text-on-surface mb-2">বিভাগ নির্বাচন করুন</label>
+                    <select
+                      value={resDept}
+                      onChange={(e) => {
+                        setResDept(e.target.value);
+                        setResJamat(""); // Reset class when department changes
+                      }}
+                      className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                    >
+                      <option value="">বিভাগ নির্বাচন করুন</option>
+                      <option value="হিফজ বিভাগ">হিফজ বিভাগ</option>
+                      <option value="কিতাব বিভাগ">কিতাব বিভাগ</option>
+                      <option value="মক্তব বিভাগ">মক্তব বিভাগ</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-sm font-bengali font-bold text-on-surface mb-2">জামাত নির্বাচন করুন</label>
                     <select
                       value={resJamat}
                       onChange={(e) => setResJamat(e.target.value)}
                       className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                      disabled={!resDept}
                     >
                       <option value="">জামাত নির্বাচন করুন</option>
-                      {Array.from(new Set(admissions.filter(a => a.status === "approved").map(a => a.classToAdmit))).map(j => (
-                        <option key={j} value={j}>{j}</option>
-                      ))}
+                      {resDept === "হিফজ বিভাগ" && (
+                        <>
+                          <option value="মক্কী">মক্কী</option>
+                          <option value="মাদানী">মাদানী</option>
+                        </>
+                      )}
+                      {resDept === "কিতাব বিভাগ" && (
+                        <>
+                          <option value="খুসূসী">খুসূসী</option>
+                          <option value="ইবতেদায়ী">ইবতেদায়ী</option>
+                          <option value="মিজান">মিজান</option>
+                          <option value="মুতাওয়াসসিতাহ">মুতাওয়াসসিতাহ</option>
+                          <option value="হেদায়াতুন নাহু">হেদায়াতুন নাহু</option>
+                          <option value="সানাবিয়া">সানাবিয়া</option>
+                          <option value="সানাবিয়া উলিয়া">সানাবিয়া উলিয়া</option>
+                          <option value="ফজীলত ১">ফজীলত ১</option>
+                          <option value="ফজীলত ২">ফজীলত ২</option>
+                          <option value="তাকমীল">তাকমীল</option>
+                        </>
+                      )}
+                      {resDept === "মক্তব বিভাগ" && (
+                        <>
+                          <option value="নার্সারী">নার্সারী</option>
+                          <option value="প্রথম">প্রথম</option>
+                          <option value="দ্বিতীয়">দ্বিতীয়</option>
+                          <option value="তৃতীয়">তৃতীয়</option>
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -1002,6 +1772,29 @@ export function AdminDashboard() {
                     placeholder="যেমন: কুরআন, হাদীস, ফিকহ, বাংলা"
                   />
                   <p className="text-xs text-on-surface-variant mt-1 font-bengali">এই বিষয়গুলো অনুযায়ী নিচের টেবিলে কলাম তৈরি হবে।</p>
+                </div>
+                
+                <div className="flex flex-wrap gap-4 items-center pt-4 border-t border-outline-variant/30">
+                  <button
+                    onClick={handleDownloadTemplate}
+                    className="bg-secondary text-on-secondary px-4 py-2 rounded-lg font-bengali font-bold flex items-center gap-2 hover:bg-secondary/90 transition-colors text-sm"
+                  >
+                    <Download size={16} /> এক্সেল টেমপ্লেট ডাউনলোড
+                  </button>
+                  
+                  <input 
+                    type="file" 
+                    accept=".xlsx, .xls, .csv" 
+                    ref={fileInputRef} 
+                    onChange={handleExcelUpload} 
+                    className="hidden" 
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="bg-tertiary text-on-tertiary px-4 py-2 rounded-lg font-bengali font-bold flex items-center gap-2 hover:bg-tertiary/90 transition-colors text-sm"
+                  >
+                    <FileSpreadsheet size={16} /> এক্সেল আপলোড
+                  </button>
                 </div>
               </div>
 
@@ -1024,14 +1817,48 @@ export function AdminDashboard() {
                           <th className="px-4 py-3 border-b">মোট</th>
                           <th className="px-4 py-3 border-b">মেধা</th>
                           <th className="px-4 py-3 border-b">অবস্থা</th>
+                          <th className="px-4 py-3 border-b">অ্যাকশন</th>
                         </tr>
                       </thead>
                       <tbody className="text-base">
                         {viewResults.map((res: any, idx: number) => (
                           <tr key={res.id} className="hover:bg-surface-container-lowest transition-colors">
-                            <td className="px-4 py-2 border-b font-bold">{res.roll}</td>
-                            <td className="px-4 py-2 border-b font-bold text-primary">{res.name}</td>
-                            <td className="px-4 py-2 border-b text-on-surface-variant">{res.fatherName}</td>
+                            <td className="px-4 py-2 border-b">
+                              <input
+                                type="text"
+                                value={res.roll}
+                                onChange={(e) => {
+                                  const newResults = [...viewResults];
+                                  newResults[idx].roll = e.target.value;
+                                  setViewResults(newResults);
+                                }}
+                                className="w-16 bg-transparent outline-none focus:ring-1 focus:ring-primary rounded px-1 border border-transparent hover:border-outline-variant/30 font-bold"
+                              />
+                            </td>
+                            <td className="px-4 py-2 border-b">
+                              <input
+                                type="text"
+                                value={res.name}
+                                onChange={(e) => {
+                                  const newResults = [...viewResults];
+                                  newResults[idx].name = e.target.value;
+                                  setViewResults(newResults);
+                                }}
+                                className="w-full bg-transparent outline-none focus:ring-1 focus:ring-primary rounded px-1 border border-transparent hover:border-outline-variant/30 font-bold text-primary"
+                              />
+                            </td>
+                            <td className="px-4 py-2 border-b">
+                              <input
+                                type="text"
+                                value={res.fatherName}
+                                onChange={(e) => {
+                                  const newResults = [...viewResults];
+                                  newResults[idx].fatherName = e.target.value;
+                                  setViewResults(newResults);
+                                }}
+                                className="w-full bg-transparent outline-none focus:ring-1 focus:ring-primary rounded px-1 border border-transparent hover:border-outline-variant/30 text-on-surface-variant"
+                              />
+                            </td>
                             {resSubjects.split(',').map(s => s.trim()).filter(Boolean).map(subject => (
                               <td key={subject} className="px-4 py-2 border-b">
                                 <input
@@ -1076,12 +1903,26 @@ export function AdminDashboard() {
                                 {res.published ? "পাবলিশড" : "হিডেন"}
                               </button>
                             </td>
+                            <td className="px-4 py-2 border-b">
+                              <button
+                                onClick={() => {
+                                  if (window.confirm("আপনি কি এই রেজাল্টটি মুছে ফেলতে চান?")) {
+                                    const newResults = viewResults.filter((_, i) => i !== idx);
+                                    setViewResults(newResults);
+                                  }
+                                }}
+                                className="p-2 text-error hover:bg-error/10 rounded-full transition-colors"
+                                title="ডিলিট করুন"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </td>
                           </tr>
                         ))}
                         {viewResults.length === 0 && (
                           <tr>
                             <td colSpan={10} className="px-4 py-10 text-center text-on-surface-variant">
-                              এই জামাতে কোনো ছাত্র পাওয়া যায়নি। প্রথমে ছাত্র তালিকা থেকে ছাত্র যোগ করুন।
+                              এই জামাতে কোনো ছাত্র পাওয়া যায়নি। প্রথমে ছাত্র তালিকা থেকে ছাত্র যোগ করুন অথবা এক্সেল আপলোড করুন।
                             </td>
                           </tr>
                         )}
@@ -1121,17 +1962,55 @@ export function AdminDashboard() {
                   </select>
                   <select 
                     className="px-4 py-2 rounded-lg border border-outline-variant font-bengali outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    value={studentFilterDept}
+                    onChange={(e) => {
+                      setStudentFilterDept(e.target.value);
+                      setStudentFilterJamat("");
+                    }}
+                  >
+                    <option value="">সকল বিভাগ</option>
+                    <option value="হিফজ বিভাগ">হিফজ বিভাগ</option>
+                    <option value="কিতাব বিভাগ">কিতাব বিভাগ</option>
+                    <option value="মক্তব বিভাগ">মক্তব বিভাগ</option>
+                  </select>
+                  <select 
+                    className="px-4 py-2 rounded-lg border border-outline-variant font-bengali outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                     value={studentFilterJamat}
                     onChange={(e) => setStudentFilterJamat(e.target.value)}
-                    disabled={!studentFilterYear}
+                    disabled={!studentFilterDept}
                   >
                     <option value="">সকল জামাত</option>
-                    {Array.from(new Set(admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear)).map(a => a.classToAdmit))).map(j => (
-                      <option key={j} value={j}>{j}</option>
-                    ))}
+                    {studentFilterDept === "হিফজ বিভাগ" && (
+                      <>
+                        <option value="মক্কী">মক্কী</option>
+                        <option value="মাদানী">মাদানী</option>
+                      </>
+                    )}
+                    {studentFilterDept === "কিতাব বিভাগ" && (
+                      <>
+                        <option value="খুসূসী">খুসূসী</option>
+                        <option value="ইবতেদায়ী">ইবতেদায়ী</option>
+                        <option value="মিজান">মিজান</option>
+                        <option value="মুতাওয়াসসিতাহ">মুতাওয়াসসিতাহ</option>
+                        <option value="হেদায়াতুন নাহু">হেদায়াতুন নাহু</option>
+                        <option value="সানাবিয়া">সানাবিয়া</option>
+                        <option value="সানাবিয়া উলিয়া">সানাবিয়া উলিয়া</option>
+                        <option value="ফজীলত ১">ফজীলত ১</option>
+                        <option value="ফজীলত ২">ফজীলত ২</option>
+                        <option value="তাকমীল">তাকমীল</option>
+                      </>
+                    )}
+                    {studentFilterDept === "মক্তব বিভাগ" && (
+                      <>
+                        <option value="নার্সারী">নার্সারী</option>
+                        <option value="প্রথম">প্রথম</option>
+                        <option value="দ্বিতীয়">দ্বিতীয়</option>
+                        <option value="তৃতীয়">তৃতীয়</option>
+                      </>
+                    )}
                   </select>
                   <div className="bg-primary/10 text-primary px-4 py-2 rounded-full font-bold text-sm">
-                    মোট ছাত্র: {admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).length}
+                    মোট ছাত্র: {admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterDept || a.department === studentFilterDept) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).length}
                   </div>
                   <button 
                     onClick={() => setIsOfflineStudentModalOpen(true)}
@@ -1156,12 +2035,12 @@ export function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/10">
-                    {admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).length === 0 ? (
+                    {admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterDept || a.department === studentFilterDept) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).length === 0 ? (
                       <tr>
                         <td colSpan={7} className="px-6 py-10 text-center text-on-surface-variant">কোন ছাত্র পাওয়া যায়নি।</td>
                       </tr>
                     ) : (
-                      admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).map((student) => (
+                      admissions.filter(a => a.status === "approved" && (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterDept || a.department === studentFilterDept) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).map((student) => (
                         <tr key={student.id} className="hover:bg-surface-container-lowest transition-colors">
                           <td className="px-6 py-4">
                             <input 
@@ -1242,17 +2121,60 @@ export function AdminDashboard() {
                   </select>
                   <select 
                     className="px-4 py-2 rounded-lg border border-outline-variant font-bengali outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                    value={studentFilterJamat}
-                    onChange={(e) => setStudentFilterJamat(e.target.value)}
+                    value={studentFilterDept}
+                    onChange={(e) => {
+                      setStudentFilterDept(e.target.value);
+                      setStudentFilterJamat("");
+                    }}
                     disabled={!studentFilterYear}
                   >
+                    <option value="">সকল বিভাগ</option>
+                    <option value="হিফজ বিভাগ">হিফজ বিভাগ</option>
+                    <option value="কিতাব বিভাগ">কিতাব বিভাগ</option>
+                    <option value="মক্তব বিভাগ">মক্তব বিভাগ</option>
+                  </select>
+                  <select 
+                    className="px-4 py-2 rounded-lg border border-outline-variant font-bengali outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    value={studentFilterJamat}
+                    onChange={(e) => setStudentFilterJamat(e.target.value)}
+                    disabled={!studentFilterDept}
+                  >
                     <option value="">সকল জামাত</option>
-                    {Array.from(new Set(admissions.filter(a => (!studentFilterYear || a.year === studentFilterYear)).map(a => a.classToAdmit))).map(j => (
-                      <option key={j} value={j}>{j}</option>
-                    ))}
+                    {studentFilterDept === "হিফজ বিভাগ" && (
+                      <>
+                        <option value="মক্কী">মক্কী</option>
+                        <option value="মাদানী">মাদানী</option>
+                      </>
+                    )}
+                    {studentFilterDept === "কিতাব বিভাগ" && (
+                      <>
+                        <option value="খুসূসী">খুসূসী</option>
+                        <option value="ইবতেদায়ী">ইবতেদায়ী</option>
+                        <option value="মিজান">মিজান</option>
+                        <option value="মুতাওয়াসসিতাহ">মুতাওয়াসসিতাহ</option>
+                        <option value="হেদায়াতুন নাহু">হেদায়াতুন নাহু</option>
+                        <option value="সানাবিয়া">সানাবিয়া</option>
+                        <option value="সানাবিয়া উলিয়া">সানাবিয়া উলিয়া</option>
+                        <option value="ফজীলত ১">ফজীলত ১</option>
+                        <option value="ফজীলত ২">ফজীলত ২</option>
+                        <option value="তাকমীল">তাকমীল</option>
+                      </>
+                    )}
+                    {studentFilterDept === "মক্তব বিভাগ" && (
+                      <>
+                        <option value="নার্সারী">নার্সারী</option>
+                        <option value="প্রথম">প্রথম</option>
+                        <option value="দ্বিতীয়">দ্বিতীয়</option>
+                        <option value="তৃতীয়">তৃতীয়</option>
+                      </>
+                    )}
                   </select>
                   <div className="bg-primary/10 text-primary px-4 py-2 rounded-full font-bold text-sm">
-                    মোট আবেদন: {admissions.filter(a => (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).length}
+                    মোট আবেদন: {admissions.filter(a => 
+                      (!studentFilterYear || a.year === studentFilterYear) && 
+                      (!studentFilterDept || a.department === studentFilterDept) &&
+                      (!studentFilterJamat || a.classToAdmit === studentFilterJamat)
+                    ).length}
                   </div>
                 </div>
               </div>
@@ -1270,12 +2192,20 @@ export function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/10">
-                    {admissions.filter(a => (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).length === 0 ? (
+                    {admissions.filter(a => 
+                      (!studentFilterYear || a.year === studentFilterYear) && 
+                      (!studentFilterDept || a.department === studentFilterDept) &&
+                      (!studentFilterJamat || a.classToAdmit === studentFilterJamat)
+                    ).length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-6 py-10 text-center text-on-surface-variant">কোন আবেদন পাওয়া যায়নি।</td>
                       </tr>
                     ) : (
-                      admissions.filter(a => (!studentFilterYear || a.year === studentFilterYear) && (!studentFilterJamat || a.classToAdmit === studentFilterJamat)).map((app) => (
+                      admissions.filter(a => 
+                        (!studentFilterYear || a.year === studentFilterYear) && 
+                        (!studentFilterDept || a.department === studentFilterDept) &&
+                        (!studentFilterJamat || a.classToAdmit === studentFilterJamat)
+                      ).map((app) => (
                         <tr key={app.id} className="hover:bg-surface-container-lowest transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
@@ -1643,25 +2573,55 @@ export function AdminDashboard() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-bengali font-bold text-on-surface mb-1">বিভাগ *</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                  value={offlineStudentData.department}
+                  onChange={(e) => setOfflineStudentData({...offlineStudentData, department: e.target.value, classToAdmit: ""})}
+                >
+                  <option value="">বিভাগ নির্বাচন করুন</option>
+                  <option value="হিফজ বিভাগ">হিফজ বিভাগ</option>
+                  <option value="কিতাব বিভাগ">কিতাব বিভাগ</option>
+                  <option value="মক্তব বিভাগ">মক্তব বিভাগ</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-bengali font-bold text-on-surface mb-1">ভর্তির জামাত *</label>
                 <select 
                   className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
                   value={offlineStudentData.classToAdmit}
                   onChange={(e) => setOfflineStudentData({...offlineStudentData, classToAdmit: e.target.value})}
+                  disabled={!offlineStudentData.department}
                 >
                   <option value="">নির্বাচন করুন</option>
-                  <option value="হিফজ">হিফজ বিভাগ</option>
-                  <option value="নূরানী">নূরানী বিভাগ</option>
-                  <option value="ইবতিদায়ী">ইবতিদায়ী</option>
-                  <option value="মিজান">মিজান</option>
-                  <option value="নাহবেমীর">নাহবেমীর</option>
-                  <option value="হেদায়াতুন্নাহু">হেদায়াতুন্নাহু</option>
-                  <option value="কাফিয়া">কাফিয়া</option>
-                  <option value="শরহে জামী">শরহে জামী</option>
-                  <option value="শরহে বেকায়">শরহে বেকায়</option>
-                  <option value="জালালাইন">জালালাইন</option>
-                  <option value="মেশকাত">মেশকাত</option>
-                  <option value="দাওরায়ে হাদীস">দাওরায়ে হাদীস</option>
+                  {offlineStudentData.department === "হিফজ বিভাগ" && (
+                    <>
+                      <option value="মক্কী">মক্কী</option>
+                      <option value="মাদানী">মাদানী</option>
+                    </>
+                  )}
+                  {offlineStudentData.department === "কিতাব বিভাগ" && (
+                    <>
+                      <option value="খুসূসী">খুসূসী</option>
+                      <option value="ইবতেদায়ী">ইবতেদায়ী</option>
+                      <option value="মিজান">মিজান</option>
+                      <option value="মুতাওয়াসসিতাহ">মুতাওয়াসসিতাহ</option>
+                      <option value="হেদায়াতুন নাহু">হেদায়াতুন নাহু</option>
+                      <option value="সানাবিয়া">সানাবিয়া</option>
+                      <option value="সানাবিয়া উলিয়া">সানাবিয়া উলিয়া</option>
+                      <option value="ফজীলত ১">ফজীলত ১</option>
+                      <option value="ফজীলত ২">ফজীলত ২</option>
+                      <option value="তাকমীল">তাকমীল</option>
+                    </>
+                  )}
+                  {offlineStudentData.department === "মক্তব বিভাগ" && (
+                    <>
+                      <option value="নার্সারী">নার্সারী</option>
+                      <option value="প্রথম">প্রথম</option>
+                      <option value="দ্বিতীয়">দ্বিতীয়</option>
+                      <option value="তৃতীয়">তৃতীয়</option>
+                    </>
+                  )}
                 </select>
               </div>
               <div>
@@ -1692,16 +2652,37 @@ export function AdminDashboard() {
                       <ImageIcon size={24} className="text-on-surface-variant" />
                     </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGalleryCallback(() => (url: string) => setOfflineStudentData({...offlineStudentData, photoUrl: url}));
-                      setIsGalleryModalOpen(true);
-                    }}
-                    className="px-4 py-2 bg-surface-container text-on-surface rounded-lg text-sm font-bold font-bengali hover:bg-surface-container-high transition-colors"
-                  >
-                    গ্যালারি থেকে ছবি নির্বাচন করুন
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert("ছবির সাইজ ২ মেগাবাইটের বেশি হতে পারবে না।");
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setOfflineStudentData({...offlineStudentData, photoUrl: reader.result as string});
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="block w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#005d421a] file:text-primary hover:file:bg-[#005d4233] font-bengali"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGalleryCallback(() => (url: string) => setOfflineStudentData({...offlineStudentData, photoUrl: url}));
+                        setIsGalleryModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-surface-container text-on-surface rounded-lg text-sm font-bold font-bengali hover:bg-surface-container-high transition-colors w-fit"
+                    >
+                      গ্যালারি থেকে ছবি নির্বাচন করুন
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1771,25 +2752,55 @@ export function AdminDashboard() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-bengali font-bold text-on-surface mb-1">বিভাগ *</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                  value={editingStudentData.department}
+                  onChange={(e) => setEditingStudentData({...editingStudentData, department: e.target.value, classToAdmit: ""})}
+                >
+                  <option value="">বিভাগ নির্বাচন করুন</option>
+                  <option value="হিফজ বিভাগ">হিফজ বিভাগ</option>
+                  <option value="কিতাব বিভাগ">কিতাব বিভাগ</option>
+                  <option value="মক্তব বিভাগ">মক্তব বিভাগ</option>
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-bengali font-bold text-on-surface mb-1">ভর্তিকৃত জামাত *</label>
                 <select 
                   className="w-full px-4 py-2 rounded-lg border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
                   value={editingStudentData.classToAdmit}
                   onChange={(e) => setEditingStudentData({...editingStudentData, classToAdmit: e.target.value})}
+                  disabled={!editingStudentData.department}
                 >
                   <option value="">নির্বাচন করুন</option>
-                  <option value="হিফজ">হিফজ বিভাগ</option>
-                  <option value="নূরানী">নূরানী বিভাগ</option>
-                  <option value="ইবতিদায়ী">ইবতিদায়ী</option>
-                  <option value="মিজান">মিজান</option>
-                  <option value="নাহবেমীর">নাহবেমীর</option>
-                  <option value="হেদায়াতুন্নাহু">হেদায়াতুন্নাহু</option>
-                  <option value="কাফিয়া">কাফিয়া</option>
-                  <option value="শরহে জামী">শরহে জামী</option>
-                  <option value="শরহে বেকায়">শরহে বেকায়</option>
-                  <option value="জালালাইন">জালালাইন</option>
-                  <option value="মেশকাত">মেশকাত</option>
-                  <option value="দাওরায়ে হাদীস">দাওরায়ে হাদীস</option>
+                  {editingStudentData.department === "হিফজ বিভাগ" && (
+                    <>
+                      <option value="মক্কী">মক্কী</option>
+                      <option value="মাদানী">মাদানী</option>
+                    </>
+                  )}
+                  {editingStudentData.department === "কিতাব বিভাগ" && (
+                    <>
+                      <option value="খুসূসী">খুসূসী</option>
+                      <option value="ইবতেদায়ী">ইবতেদায়ী</option>
+                      <option value="মিজান">মিজান</option>
+                      <option value="মুতাওয়াসসিতাহ">মুতাওয়াসসিতাহ</option>
+                      <option value="হেদায়াতুন নাহু">হেদায়াতুন নাহু</option>
+                      <option value="সানাবিয়া">সানাবিয়া</option>
+                      <option value="সানাবিয়া উলিয়া">সানাবিয়া উলিয়া</option>
+                      <option value="ফজীলত ১">ফজীলত ১</option>
+                      <option value="ফজীলত ২">ফজীলত ২</option>
+                      <option value="তাকমীল">তাকমীল</option>
+                    </>
+                  )}
+                  {editingStudentData.department === "মক্তব বিভাগ" && (
+                    <>
+                      <option value="নার্সারী">নার্সারী</option>
+                      <option value="প্রথম">প্রথম</option>
+                      <option value="দ্বিতীয়">দ্বিতীয়</option>
+                      <option value="তৃতীয়">তৃতীয়</option>
+                    </>
+                  )}
                 </select>
               </div>
               <div>
@@ -1820,16 +2831,37 @@ export function AdminDashboard() {
                       <ImageIcon size={24} className="text-on-surface-variant" />
                     </div>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGalleryCallback(() => (url: string) => setEditingStudentData({...editingStudentData, photoUrl: url}));
-                      setIsGalleryModalOpen(true);
-                    }}
-                    className="px-4 py-2 bg-surface-container text-on-surface rounded-lg text-sm font-bold font-bengali hover:bg-surface-container-high transition-colors"
-                  >
-                    গ্যালারি থেকে ছবি নির্বাচন করুন
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 2 * 1024 * 1024) {
+                            alert("ছবির সাইজ ২ মেগাবাইটের বেশি হতে পারবে না।");
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setEditingStudentData({...editingStudentData, photoUrl: reader.result as string});
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="block w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#005d421a] file:text-primary hover:file:bg-[#005d4233] font-bengali"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGalleryCallback(() => (url: string) => setEditingStudentData({...editingStudentData, photoUrl: url}));
+                        setIsGalleryModalOpen(true);
+                      }}
+                      className="px-4 py-2 bg-surface-container text-on-surface rounded-lg text-sm font-bold font-bengali hover:bg-surface-container-high transition-colors w-fit"
+                    >
+                      গ্যালারি থেকে ছবি নির্বাচন করুন
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

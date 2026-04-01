@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Phone, Mail, Menu, X, MoreVertical } from "lucide-react";
 import { useData } from "../context/DataContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 
 export function Navbar() {
   const location = useLocation();
@@ -13,7 +13,7 @@ export function Navbar() {
 
   if (loading || !data) {
     return (
-      <header className="bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(0,93,66,0.06)]">
+      <header className="bg-[#ffffffcc] backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(0,93,66,0.06)]">
         <div className="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
           <div className="h-10 w-48 bg-surface-container-high rounded animate-pulse"></div>
           <div className="hidden md:flex gap-8">
@@ -25,12 +25,12 @@ export function Navbar() {
   }
 
   return (
-    <header className="bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(0,93,66,0.06)] print:hidden">
+    <header className="bg-[#ffffffcc] backdrop-blur-xl sticky top-0 z-50 shadow-[0_20px_40px_rgba(0,93,66,0.06)] print:hidden">
       <div className="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
           <Link to="/" className="text-2xl font-bold tracking-tight text-primary flex items-center gap-3">
             {data.settings.logo ? (
-              <div className="bg-white rounded-md p-1 shadow-sm flex items-center justify-center">
+              <div className="bg-white rounded-md p-1 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex items-center justify-center">
                 <img 
                   src={data.settings.logo} 
                   alt="Logo" 
@@ -90,7 +90,7 @@ export function Navbar() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute top-full left-0 mt-2 w-44 bg-white rounded-xl shadow-2xl border border-outline-variant/10 py-2 z-50 overflow-hidden"
+                  className="absolute top-full left-0 mt-2 w-44 bg-white rounded-xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] border border-outline-variant/10 py-2 z-50 overflow-hidden"
                 >
                   <Link
                     to="/admission"
@@ -108,32 +108,42 @@ export function Navbar() {
               )}
             </AnimatePresence>
           </div>
-          <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
-            আমাদের সম্পর্কে
-          </a>
-          <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
-            বিভাগসমূহ
-          </a>
-          <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
-            নোটিশ
-          </a>
-          <a className="text-on-surface-variant hover:text-primary transition-colors" href="#">
-            যোগাযোগ
-          </a>
           <Link
-            to="/admin"
+            to="/about"
             className={`${
-              location.pathname.startsWith("/admin") ? "text-primary font-bold border-b-2 border-primary pb-1" : "text-on-surface-variant hover:text-primary"
+              location.pathname === "/about" ? "text-primary font-bold border-b-2 border-primary pb-1" : "text-on-surface-variant hover:text-primary"
             } transition-colors`}
           >
-            অ্যাডমিন
+            আমাদের সম্পর্কে
+          </Link>
+          <Link
+            to="/hisab"
+            className={`${
+              location.pathname === "/hisab" ? "text-primary font-bold border-b-2 border-primary pb-1" : "text-on-surface-variant hover:text-primary"
+            } transition-colors`}
+          >
+            হিসাব
+          </Link>
+          <Link
+            to="/#departments"
+            className="text-on-surface-variant hover:text-primary transition-colors"
+          >
+            বিভাগসমূহ
+          </Link>
+          <Link
+            to="/#notices"
+            className="text-on-surface-variant hover:text-primary transition-colors"
+          >
+            নোটিশ
+          </Link>
+          <Link
+            to="/#contact"
+            className="text-on-surface-variant hover:text-primary transition-colors"
+          >
+            যোগাযোগ
           </Link>
         </nav>
         <div className="flex items-center gap-4">
-          <div className="hidden lg:flex items-center gap-2 text-primary">
-            <Phone size={20} />
-            <Mail size={20} />
-          </div>
           <Link 
             to="/admission"
             className="hidden sm:flex bg-primary text-on-primary px-5 py-2 rounded-md font-bengali font-bold text-sm hover:scale-95 duration-200 ease-in-out transition-all items-center justify-center"
@@ -214,26 +224,44 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
-              <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#" onClick={() => setIsMenuOpen(false)}>
-                আমাদের সম্পর্কে
-              </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#" onClick={() => setIsMenuOpen(false)}>
-                বিভাগসমূহ
-              </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#" onClick={() => setIsMenuOpen(false)}>
-                নোটিশ
-              </a>
-              <a className="text-on-surface-variant hover:text-primary transition-colors py-2" href="#" onClick={() => setIsMenuOpen(false)}>
-                যোগাযোগ
-              </a>
               <Link
-                to="/admin"
+                to="/about"
                 onClick={() => setIsMenuOpen(false)}
                 className={`${
-                  location.pathname.startsWith("/admin") ? "text-primary font-bold" : "text-on-surface-variant"
+                  location.pathname === "/about" ? "text-primary font-bold" : "text-on-surface-variant"
                 } hover:text-primary transition-colors py-2`}
               >
-                অ্যাডমিন
+                আমাদের সম্পর্কে
+              </Link>
+              <Link
+                to="/hisab"
+                onClick={() => setIsMenuOpen(false)}
+                className={`${
+                  location.pathname === "/hisab" ? "text-primary font-bold" : "text-on-surface-variant"
+                } hover:text-primary transition-colors py-2`}
+              >
+                হিসাব
+              </Link>
+              <Link
+                to="/#departments"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-on-surface-variant hover:text-primary transition-colors py-2"
+              >
+                বিভাগসমূহ
+              </Link>
+              <Link
+                to="/#notices"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-on-surface-variant hover:text-primary transition-colors py-2"
+              >
+                নোটিশ
+              </Link>
+              <Link
+                to="/#contact"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-on-surface-variant hover:text-primary transition-colors py-2"
+              >
+                যোগাযোগ
               </Link>
               <Link 
                 to="/admission"
@@ -263,7 +291,7 @@ export function Footer() {
         <div className="max-w-xs">
           <div className="flex items-center gap-3 mb-4">
             {data.settings.logo ? (
-              <div className="bg-white rounded-md p-1 shadow-sm flex items-center justify-center">
+              <div className="bg-white rounded-md p-1 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] flex items-center justify-center">
                 <img 
                   src={data.settings.logo} 
                   alt="Logo" 
@@ -296,16 +324,20 @@ export function Footer() {
         <div>
           <h5 className="text-white font-bold mb-4 uppercase text-xs tracking-widest font-body">Quick Links</h5>
           <ul className="space-y-3 font-sans text-sm tracking-wide">
+            <li><Link className="text-on-primary-container/80 hover:text-white transition-colors" to="/about">About Us</Link></li>
+            <li><Link className="text-on-primary-container/80 hover:text-white transition-colors" to="/hisab">Accounts (Hisab)</Link></li>
+            <li><Link className="text-on-primary-container/80 hover:text-white transition-colors" to="/results">Results</Link></li>
+            <li><Link className="text-on-primary-container/80 hover:text-white transition-colors" to="/admission">Admission</Link></li>
             <li><a className="text-on-primary-container/80 hover:text-white transition-colors" href="#">Privacy Policy</a></li>
             <li><a className="text-on-primary-container/80 hover:text-white transition-colors" href="#">Terms of Service</a></li>
-            <li><a className="text-on-primary-container/80 hover:text-white transition-colors" href="#">Alumni Portal</a></li>
           </ul>
         </div>
         <div>
-          <h5 className="text-white font-bold mb-4 uppercase text-xs tracking-widest font-body">Support</h5>
-          <ul className="space-y-3 font-sans text-sm tracking-wide">
-            <li><a className="text-secondary-container underline underline-offset-4" href="#">Donations</a></li>
-            <li><a className="text-on-primary-container/80 hover:text-white transition-colors" href="#">Fatwa Request</a></li>
+          <h5 className="text-white font-bold mb-4 uppercase text-xs tracking-widest font-body">Contact</h5>
+          <ul className="space-y-3 font-bengali text-sm text-on-primary-container/80">
+            <li className="flex items-center gap-2"><span className="material-symbols-outlined text-xs">location_on</span> {data.settings.address}</li>
+            <li className="flex items-center gap-2 font-sans"><span className="material-symbols-outlined text-xs">call</span> {data.settings.phone}</li>
+            <li className="flex items-center gap-2 font-sans"><span className="material-symbols-outlined text-xs">mail</span> {data.settings.email}</li>
           </ul>
         </div>
         <div className="bg-primary p-6 rounded-xl border border-primary-container">

@@ -16,7 +16,8 @@ export function AdmissionForm() {
     presentAddress: "",
     permanentAddress: "",
     previousInstitute: "",
-    classToAdmit: "হিফজ",
+    department: "",
+    classToAdmit: "",
     contactNumber: "",
     guardianName: "",
     guardianContact: "",
@@ -376,25 +377,59 @@ export function AdmissionForm() {
                 />
               </div>
               <div className="space-y-2">
+                <label className="text-sm font-bengali font-bold text-on-surface">বিভাগ নির্বাচন করুন</label>
+                <select 
+                  name="department"
+                  value={formData.department}
+                  onChange={(e) => {
+                    setFormData({ ...formData, department: e.target.value, classToAdmit: "" });
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                >
+                  <option value="">বিভাগ নির্বাচন করুন</option>
+                  <option value="হিফজ বিভাগ">হিফজ বিভাগ</option>
+                  <option value="কিতাব বিভাগ">কিতাব বিভাগ</option>
+                  <option value="মক্তব বিভাগ">মক্তব বিভাগ</option>
+                </select>
+              </div>
+              <div className="space-y-2">
                 <label className="text-sm font-bengali font-bold text-on-surface">যে জামাতে ভর্তি হতে ইচ্ছুক</label>
                 <select 
                   name="classToAdmit"
                   value={formData.classToAdmit}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-outline-variant outline-none focus:ring-2 focus:ring-primary font-bengali"
+                  disabled={!formData.department}
                 >
-                  <option value="হিফজ">হিফজ বিভাগ</option>
-                  <option value="নূরানী">নূরানী বিভাগ</option>
-                  <option value="ইবতিদায়ী">ইবতিদায়ী</option>
-                  <option value="মিজান">মিজান</option>
-                  <option value="নাহবেমীর">নাহবেমীর</option>
-                  <option value="হেদায়াতুন্নাহু">হেদায়াতুন্নাহু</option>
-                  <option value="কাফিয়া">কাফিয়া</option>
-                  <option value="শরহে জামী">শরহে জামী</option>
-                  <option value="শরহে বেকায়">শরহে বেকায়</option>
-                  <option value="জালালাইন">জালালাইন</option>
-                  <option value="মেশকাত">মেশকাত</option>
-                  <option value="দাওরায়ে হাদীস">দাওরায়ে হাদীস</option>
+                  <option value="">জামাত নির্বাচন করুন</option>
+                  {formData.department === "হিফজ বিভাগ" && (
+                    <>
+                      <option value="মক্কী">মক্কী</option>
+                      <option value="মাদানী">মাদানী</option>
+                    </>
+                  )}
+                  {formData.department === "কিতাব বিভাগ" && (
+                    <>
+                      <option value="খুসূসী">খুসূসী</option>
+                      <option value="ইবতেদায়ী">ইবতেদায়ী</option>
+                      <option value="মিজান">মিজান</option>
+                      <option value="মুতাওয়াসসিতাহ">মুতাওয়াসসিতাহ</option>
+                      <option value="হেদায়াতুন নাহু">হেদায়াতুন নাহু</option>
+                      <option value="সানাবিয়া">সানাবিয়া</option>
+                      <option value="সানাবিয়া উলিয়া">সানাবিয়া উলিয়া</option>
+                      <option value="ফজীলত ১">ফজীলত ১</option>
+                      <option value="ফজীলত ২">ফজীলত ২</option>
+                      <option value="তাকমীল">তাকমীল</option>
+                    </>
+                  )}
+                  {formData.department === "মক্তব বিভাগ" && (
+                    <>
+                      <option value="নার্সারী">নার্সারী</option>
+                      <option value="প্রথম">প্রথম</option>
+                      <option value="দ্বিতীয়">দ্বিতীয়</option>
+                      <option value="তৃতীয়">তৃতীয়</option>
+                    </>
+                  )}
                 </select>
               </div>
             </div>

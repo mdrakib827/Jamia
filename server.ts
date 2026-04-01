@@ -34,6 +34,9 @@ const initialData = {
   "settings": {
     "siteTitle": "জামি‘আ ইসলামিয়া শামসুল উলূম কড়ৈয়াবাড়ী",
     "address": "কড়ৈয়াবারী, বারপাড়া, বন্দর, নারায়াণগঞ্জ।",
+    "phone": "01792-756020, 01719-337228",
+    "email": "info@jamiaislamia.edu",
+    "mapUrl": "https://maps.app.goo.gl/wqczYDpT5kcdqTDE6",
     "logo": "https://lh3.googleusercontent.com/aida-public/AB6AXuCMu0I0-nAJDaXwovvUL2h5E0lfJb2QiBph-NR8_oAyRv1Q3-fJBW3M1dnre4ZITR4zaTtV4uH14LW4Aqk26VWtc3leQbr6yRmlC4bZSBoV73fFaesFfXvjrQApCQWVTSW7pLrZy3Uw4MC27721dCQ9dcwyIxngTJrcVUISP_unAq58uXY1KWjGj-7sOnZA_CMs6rJPvuqIojqLt15Che6qnY2rl6rj2v-u9LtK8Ne_L4mQZSUZ3pf9MRJWgeYnSMid82DodR7LaKA7",
     "heroImage": "https://lh3.googleusercontent.com/aida-public/AB6AXuBJcxE_WaNYk8wxz2Me4i9AQSv8iDrQualK7rRMUDTazl5k_4TdRwpFgNEVGvtc-wlzxpLmwlgITaQGqaNAhpZjavwNuWIM_-HYT-dBEVean4UsaYe6JgEivd4m7S9FlvixPIoFZhMdyeyhLl6yVBJKI4dv0WsDJNl-rdEbH5JN0Z-WETzTJRJgW03FfmwLaTOa4H-zq7fROrsW0PH1HqEWEIk6-aF98dsPt4bj1cB9FRrm4j-PSEanPh-bsOSUV4LTfoAukUxHTyRf",
     "gallery": [
@@ -237,6 +240,42 @@ const initialData = {
     }
   ],
   "admissionInfo": "2026 শিক্ষাবর্ষের ভর্তি কার্যক্রম শুরু হয়েছে। বিস্তারিত তথ্যের জন্য মাদরাসা অফিসে যোগাযোগ করুন।",
+  "about": {
+    "heroTitle": "আমাদের সম্পর্কে",
+    "heroSubtitle": "দ্বীনি শিক্ষার এক নির্ভরযোগ্য প্রতিষ্ঠান, যেখানে কুরআন ও সুন্নাহর আলোকে আদর্শ মানুষ গড়া হয়।",
+    "historyTitle": "প্রতিষ্ঠানের ইতিহাস",
+    "historyContent": "জামি‘আ ইসলামিয়া শামসুল উলূম কড়ৈয়াবাড়ী একটি ঐতিহ্যবাহী দ্বীনি শিক্ষা প্রতিষ্ঠান। এটি বন্দর, নারায়ণগঞ্জের এক নিভৃত ও শান্ত পরিবেশে অবস্থিত। বহু বছর আগে একদল নিবেদিতপ্রাণ আলেম ও স্থানীয় ধর্মপ্রাণ মানুষের ঐকান্তিক প্রচেষ্টায় এই মাদরাসাটি প্রতিষ্ঠিত হয়।\n\nপ্রতিষ্ঠালগ্ন থেকেই এই প্রতিষ্ঠানটি কুরআন ও সুন্নাহর সঠিক জ্ঞান বিতরণে অগ্রণী ভূমিকা পালন করে আসছে। এখানে হিফজুল কুরআন থেকে শুরু করে দাওরায়ে হাদীস (মাস্টার্স) পর্যন্ত উচ্চতর ইসলামী শিক্ষার ব্যবস্থা রয়েছে।\n\nবর্তমানে এই মাদরাসাটি অত্র অঞ্চলের অন্যতম শ্রেষ্ঠ বিদ্যাপীঠ হিসেবে পরিচিতি লাভ করেছে, যেখান থেকে প্রতি বছর শত শত আলেম ও হাফেজ কামিয়াব হয়ে দেশ ও জাতির সেবায় নিয়োজিত হচ্ছেন।",
+    "missionTitle": "আমাদের লক্ষ্য (Mission)",
+    "missionContent": "আমাদের মূল লক্ষ্য হলো শিক্ষার্থীদের মধ্যে কুরআন ও সুন্নাহর গভীর জ্ঞান সঞ্চার করা এবং তাদের নৈতিক ও আধ্যাত্মিক চরিত্র গঠন করা। আমরা চাই এমন এক প্রজন্ম তৈরি করতে যারা ইসলামের সঠিক বার্তা বিশ্বব্যাপী ছড়িয়ে দেবে।",
+    "visionTitle": "আমাদের উদ্দেশ্য (Vision)",
+    "visionContent": "একটি আদর্শ ইসলামী সমাজ বিনির্মাণে দক্ষ ও যোগ্য আলেম তৈরি করা। আধুনিক বিশ্বের চ্যালেঞ্জ মোকাবেলায় সক্ষম এবং দ্বীনি মূল্যবোধে অটল একদল দাঈ তৈরি করা যারা সমাজের সকল স্তরে হেদায়েতের আলো জ্বালাবেন।",
+    "principalQuote": "\"দ্বীনি শিক্ষা কেবল একটি পেশা নয়, এটি একটি আমানত। আমাদের মাদরাসা সেই আমানত রক্ষার জন্য নিরলস কাজ করে যাচ্ছে। আমরা চাই আমাদের ছাত্ররা কেবল কিতাবী বিদ্যায় পারদর্শী না হয়ে বরং আমলী জিন্দেগীতেও আদর্শ হবে।\"",
+    "facilities": [
+      { "title": "বিশাল লাইব্রেরি", "desc": "হাজারো কিতাবের সংগ্রহশালা", "icon": "book" },
+      { "title": "আবাসিক ব্যবস্থা", "desc": "নিরাপদ ও উন্নত ছাত্রাবাস", "icon": "group" },
+      { "title": "মসজিদ কমপ্লেক্স", "desc": "ইবাদত ও আমলের সুন্দর পরিবেশ", "icon": "mosque" },
+      { "title": "খাবার হল", "desc": "স্বাস্থ্যসম্মত খাবারের ব্যবস্থা", "icon": "restaurant" }
+    ]
+  },
+  "departments": [
+    { "title": "হিফজুল কুরআন বিভাগ", "desc": "সহীহ ও সুন্দর তিলাওয়াতের মাধ্যমে পবিত্র কুরআন হিফজ করার অনন্য বিভাগ।", "icon": "menu_book" },
+    { "title": "মাওলানা কোর্স (দাওরায়ে হাদীস)", "desc": "কুরআন, সুন্নাহ ও ইসলামী ফিকহ-এর উপর উচ্চতর গবেষণামূলক মাস্টার্স সমমানের কোর্স।", "icon": "school" },
+    { "title": "ইফতা ও গবেষণা বিভাগ", "desc": "সমসাময়িক মাসআলা-মাসায়েল ও ফতোয়া প্রদানের বিশেষ প্রশিক্ষণ বিভাগ।", icon: "gavel" }
+  ],
+  "transactions": [
+    { "id": 1, "date": "2026-03-01", "type": "income", "category": "দান-সদকা", "amount": 50000, "description": "মাসিক সাধারণ দান" },
+    { "id": 2, "date": "2026-03-05", "type": "expense", "category": "বেতন", "amount": 35000, "description": "শিক্ষকদের মাসিক বেতন" },
+    { "id": 3, "date": "2026-03-10", "type": "income", "category": "ভর্তি ফি", "amount": 15000, "description": "নতুন ছাত্রদের ভর্তি ফি" }
+  ],
+  "donationInfo": {
+    "bankName": "ইসলামী ব্যাংক বাংলাদেশ লিমিটেড",
+    "accountName": "জামি‘আ ইসলামিয়া শামসুল উলূম",
+    "accountNumber": "২০৫০XXXXXXXXXXXXX",
+    "branch": "বন্দর শাখা, নারায়ণগঞ্জ",
+    "bkash": "০১৭XXXXXXXX",
+    "nagad": "০১৭XXXXXXXX",
+    "rocket": "০১৭XXXXXXXX"
+  },
   "admin": {
     "email": "admin@gmail.com",
     "password": "admin123"
@@ -296,6 +335,63 @@ async function syncWithSupabase() {
     }
   } catch (err) {
     console.error("Sync error:", err);
+  }
+
+  // Add more test data for each class after sync
+  const classesList = [
+    "মক্কী", "মাদানী", 
+    "খুসূসী", "ইবতেদায়ী", "মিজান", "মুতাওয়াসসিতাহ", "হেদায়াতুন নাহু", "সানাবিয়া", "সানাবিয়া উলিয়া", "ফজীলত ১", "ফজীলত ২", "তাকমীল",
+    "নার্সারী", "প্রথম", "দ্বিতীয়", "তৃতীয়"
+  ];
+
+  let dataChanged = false;
+  classesList.forEach((className, classIdx) => {
+    for (let i = 1; i <= 5; i++) {
+      const id = 2000 + classIdx * 10 + i;
+      const roll = (100 + i).toString();
+      const year = "2026";
+      
+      // Only add if not already present
+      if (!(dbData.admissions as any).some((a: any) => a.studentNameBn === `${className} ছাত্র ${i}` && a.classToAdmit === className)) {
+        (dbData.admissions as any).push({
+          id: id,
+          studentNameBn: `${className} ছাত্র ${i}`,
+          fatherName: `Pita ${i}`,
+          classToAdmit: className,
+          status: "approved",
+          roll: roll,
+          contactNumber: `017000000${classIdx}${i}`,
+          submittedAt: new Date().toISOString()
+        });
+        dataChanged = true;
+      }
+
+      if (!(dbData.results as any).some((r: any) => r.name === `${className} ছাত্র ${i}` && r.class === className)) {
+        (dbData.results as any).push({
+          id: id * 10,
+          exam: "বার্ষিক পরীক্ষা",
+          name: `${className} ছাত্র ${i}`,
+          roll: roll,
+          year: year,
+          class: className,
+          marks: {
+            "ফিকহ": 70 + i * 5,
+            "কুরআন": 80 + i * 2,
+            "বাংলা": 60 + i * 4,
+            "হাদীস": 75 + i * 3
+          },
+          total: 285 + i * 14,
+          position: i,
+          published: true,
+          admissionId: id
+        });
+        dataChanged = true;
+      }
+    }
+  });
+
+  if (dataChanged) {
+    await updateSupabase();
   }
 }
 
@@ -436,8 +532,40 @@ app.post("/api/results", async (req, res) => {
   res.json({ success: true });
 });
 
+app.post("/api/results/bulk", async (req, res) => {
+  const { newResults } = req.body;
+  if (!dbData.results) dbData.results = [];
+  dbData.results = [...dbData.results, ...newResults];
+  await updateSupabase();
+  res.json({ success: true });
+});
+
 app.post("/api/admission", async (req, res) => {
   dbData.admissionInfo = req.body.info;
+  await updateSupabase();
+  res.json({ success: true });
+});
+
+app.post("/api/about", async (req, res) => {
+  dbData.about = req.body;
+  await updateSupabase();
+  res.json({ success: true });
+});
+
+app.post("/api/departments", async (req, res) => {
+  dbData.departments = req.body;
+  await updateSupabase();
+  res.json({ success: true });
+});
+
+app.post("/api/transactions", async (req, res) => {
+  dbData.transactions = req.body;
+  await updateSupabase();
+  res.json({ success: true });
+});
+
+app.post("/api/donation", async (req, res) => {
+  dbData.donationInfo = req.body;
   await updateSupabase();
   res.json({ success: true });
 });
@@ -464,6 +592,17 @@ app.post("/api/admissions/update-status", async (req, res) => {
     }
     return app;
   });
+
+  // Also update any associated results
+  if (roll !== undefined && dbData.results) {
+    dbData.results = dbData.results.map((r: any) => {
+      if (r.admissionId === id) {
+        return { ...r, roll };
+      }
+      return r;
+    });
+  }
+
   await updateSupabase();
   res.json({ success: true });
 });
@@ -486,6 +625,17 @@ app.post("/api/admissions/update-photo", async (req, res) => {
   dbData.admissions = dbData.admissions.map((app: any) => 
     app.id === id ? { ...app, photoUrl } : app
   );
+
+  // Also update any associated results
+  if (dbData.results) {
+    dbData.results = dbData.results.map((r: any) => {
+      if (r.admissionId === id) {
+        return { ...r, photoUrl };
+      }
+      return r;
+    });
+  }
+
   await updateSupabase();
   res.json({ success: true });
 });
@@ -495,6 +645,17 @@ app.post("/api/admissions/update-roll", async (req, res) => {
   dbData.admissions = dbData.admissions.map((app: any) => 
     app.id === id ? { ...app, roll } : app
   );
+
+  // Also update any associated results
+  if (dbData.results) {
+    dbData.results = dbData.results.map((r: any) => {
+      if (r.admissionId === id) {
+        return { ...r, roll };
+      }
+      return r;
+    });
+  }
+
   await updateSupabase();
   res.json({ success: true });
 });
@@ -504,6 +665,22 @@ app.post("/api/admissions/update-student", async (req, res) => {
   dbData.admissions = dbData.admissions.map((app: any) => 
     app.id === id ? { ...app, ...studentData } : app
   );
+  
+  // Also update any associated results
+  if (dbData.results) {
+    dbData.results = dbData.results.map((r: any) => {
+      if (r.admissionId === id) {
+        return { 
+          ...r, 
+          name: studentData.studentNameBn || r.name,
+          fatherName: studentData.fatherName || r.fatherName,
+          photoUrl: studentData.photoUrl || r.photoUrl
+        };
+      }
+      return r;
+    });
+  }
+  
   await updateSupabase();
   res.json({ success: true });
 });

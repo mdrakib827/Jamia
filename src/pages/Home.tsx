@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 export function Home() {
   const { data, loading } = useData();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
   if (loading || !data) return <div className="min-h-screen flex items-center justify-center font-bengali">লোড হচ্ছে...</div>;
 
@@ -125,7 +126,7 @@ export function Home() {
       </section>
 
       {/* Departments Section */}
-      <section className="py-24 bg-surface-container-low relative overflow-hidden">
+      <section id="departments" className="py-24 bg-surface-container-low relative overflow-hidden">
         <div className="absolute inset-0 arabesque-pattern opacity-10 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-8 relative">
           <div className="text-center mb-16">
@@ -134,11 +135,11 @@ export function Home() {
             <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
+            {(data.departments || [
               { title: "হিফজুল কুরআন বিভাগ", desc: "সহীহ ও সুন্দর তিলাওয়াতের মাধ্যমে পবিত্র কুরআন হিফজ করার অনন্য বিভাগ।", icon: "menu_book" },
               { title: "মাওলানা কোর্স (দাওরায়ে হাদীস)", desc: "কুরআন, সুন্নাহ ও ইসলামী ফিকহ-এর উপর উচ্চতর গবেষণামূলক মাস্টার্স সমমানের কোর্স।", icon: "school" },
               { title: "ইফতা ও গবেষণা বিভাগ", desc: "সমসাময়িক মাসআলা-মাসায়েল ও ফতোয়া প্রদানের বিশেষ প্রশিক্ষণ বিভাগ।", icon: "gavel" },
-            ].map((dept, idx) => (
+            ]).map((dept: any, idx: number) => (
               <motion.div
                 key={idx}
                 whileHover={{ y: -10 }}
@@ -159,7 +160,7 @@ export function Home() {
       </section>
 
       {/* Notice Board & Quote Section */}
-      <section className="py-24 max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <section id="notices" className="py-24 max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2">
           <div className="flex justify-between items-end mb-8">
             <div>
@@ -222,6 +223,50 @@ export function Home() {
                 <p className="text-on-surface-variant font-bengali text-sm">{teacher.designation}</p>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Students Section */}
+      <section className="py-24 bg-surface-container-low relative overflow-hidden">
+        <div className="absolute inset-0 arabesque-pattern opacity-5 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-8 relative">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bengali font-bold text-on-surface mb-4">আমাদের ছাত্রবৃন্দ</h2>
+            <div className="w-24 h-1 bg-secondary mx-auto rounded-full"></div>
+            <p className="mt-4 text-on-surface-variant font-bengali">মাদরাসার কৃতি ও নিয়মিত ছাত্রদের তালিকা</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-12">
+            {data.admissions
+              ?.filter((a: any) => a.status === "approved")
+              .slice(0, 6)
+              .map((student: any) => (
+                <div key={student.id} className="bg-white p-4 rounded-xl shadow-sm border border-outline-variant/10 text-center">
+                  <div className="w-20 h-20 mx-auto mb-3 rounded-full bg-surface-container overflow-hidden border-2 border-primary/10">
+                    {student.photoUrl ? (
+                      <img src={student.photoUrl} alt={student.studentNameBn} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-primary/20">
+                        <span className="material-symbols-outlined text-3xl">person</span>
+                      </div>
+                    )}
+                  </div>
+                  <h4 className="font-bengali font-bold text-primary text-sm line-clamp-1">{student.studentNameBn}</h4>
+                  <p className="text-[10px] text-on-surface-variant font-bengali">{student.classToAdmit}</p>
+                </div>
+              ))}
+          </div>
+
+          <div className="flex justify-center">
+            <Link 
+              to="/students" 
+              className="group relative inline-flex items-center gap-3 bg-primary text-on-primary px-8 py-4 rounded-xl font-bengali font-bold text-xl hover:bg-tertiary transition-all duration-300 shadow-xl hover:shadow-primary/20"
+            >
+              <span className="material-symbols-outlined">groups</span>
+              সম্পূর্ণ ছাত্র তালিকা দেখুন
+              <span className="material-symbols-outlined group-hover:translate-x-2 transition-transform">arrow_right_alt</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -292,8 +337,96 @@ export function Home() {
         </section>
       )}
 
+      {/* Contact Section */}
+      <section id="contact" className="py-24 bg-surface-container-low">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bengali font-bold text-on-surface mb-4">যোগাযোগ</h2>
+            <div className="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+            <p className="mt-6 text-on-surface-variant font-bengali text-lg max-w-2xl mx-auto">
+              যেকোনো তথ্য বা জিজ্ঞাসার জন্য আমাদের সাথে যোগাযোগ করুন।
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <div className="lg:col-span-1 space-y-8">
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-outline-variant/10">
+                <div className="space-y-8">
+                  <div className="flex items-start gap-5">
+                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined">location_on</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-on-surface font-bengali mb-1">ঠিকানা</h4>
+                      <p className="text-on-surface-variant font-bengali leading-relaxed">{data.settings.address}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-5">
+                    <div className="w-12 h-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined">call</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-on-surface font-bengali mb-1">ফোন নম্বর</h4>
+                      <p className="text-on-surface-variant font-sans leading-relaxed">{data.settings.phone}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-5">
+                    <div className="w-12 h-12 bg-tertiary/10 text-tertiary rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <span className="material-symbols-outlined">mail</span>
+                    </div>
+                    <div>
+                      <h4 className="text-lg font-bold text-on-surface font-bengali mb-1">ইমেইল</h4>
+                      <p className="text-on-surface-variant font-sans leading-relaxed">{data.settings.email}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2">
+              <div className="w-full h-full min-h-[400px] rounded-3xl overflow-hidden shadow-xl border border-outline-variant/20 bg-surface-container flex items-center justify-center">
+                {data.settings.mapUrl && data.settings.mapUrl.includes("google.com/maps/embed") ? (
+                  <iframe 
+                    src={data.settings.mapUrl}
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen={true} 
+                    loading="lazy"
+                    title="Madrasa Location"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  ></iframe>
+                ) : data.settings.mapUrl ? (
+                  <div className="text-center p-8">
+                    <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                      <span className="material-symbols-outlined text-4xl">map</span>
+                    </div>
+                    <h4 className="text-xl font-bengali font-bold text-on-surface mb-4">মাদরাসার অবস্থান ম্যাপে দেখুন</h4>
+                    <a 
+                      href={data.settings.mapUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-3 rounded-xl font-bengali font-bold hover:shadow-lg transition-all"
+                    >
+                      গুগল ম্যাপে ওপেন করুন
+                      <span className="material-symbols-outlined">open_in_new</span>
+                    </a>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-on-surface-variant font-bengali">
+                    ম্যাপ লোড করা সম্ভব হয়নি।
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Admission Section */}
-      <section className="py-24 bg-white">
+      <section id="admission" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -334,9 +467,18 @@ export function Home() {
           <div className="max-w-xl">
             <h2 className="text-4xl font-bengali font-bold mb-6">দ্বীনি শিক্ষার আলো ছড়িয়ে দিতে আপনার অংশগ্রহণ আমাদের কাম্য</h2>
             <p className="text-on-primary-container/80 mb-8 text-lg font-bengali leading-relaxed">{data.admissionInfo}</p>
-            <button className="bg-secondary-container text-on-secondary-container px-10 py-4 rounded-md font-bold text-xl hover:bg-secondary-container/80 transition-all font-bengali shadow-lg">
-              অনলাইন দান করুন
-            </button>
+            <div className="flex flex-wrap gap-4">
+              <button 
+                onClick={() => setIsDonationModalOpen(true)}
+                className="bg-secondary-container text-on-secondary-container px-10 py-4 rounded-md font-bold text-xl hover:bg-secondary-container/80 transition-all font-bengali shadow-lg"
+              >
+                অনলাইন দান করুন
+              </button>
+              <Link to="/hisab" className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-md font-bold text-lg hover:bg-white/20 transition-all font-bengali flex items-center gap-2">
+                <span className="material-symbols-outlined">account_balance_wallet</span>
+                আর্থিক স্বচ্ছতা ও হিসাব
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
@@ -350,6 +492,93 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      {/* Donation Modal */}
+      <AnimatePresence>
+        {isDonationModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setIsDonationModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-primary p-8 text-white relative">
+                <button 
+                  onClick={() => setIsDonationModalOpen(false)}
+                  className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors"
+                >
+                  <X size={28} />
+                </button>
+                <h3 className="text-3xl font-bengali font-bold mb-2">অনলাইন দান করুন</h3>
+                <p className="text-white/80 font-bengali">মাদরাসার দ্বীনি কাজে আপনার অংশগ্রহণ সদকায়ে জারিয়া হিসেবে গণ্য হবে।</p>
+              </div>
+              
+              <div className="p-8 space-y-8">
+                {/* Bank Info */}
+                <div className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant/20">
+                  <div className="flex items-center gap-3 mb-4 text-primary">
+                    <span className="material-symbols-outlined">account_balance</span>
+                    <h4 className="text-xl font-bengali font-bold">ব্যাংক একাউন্ট তথ্য</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-on-surface-variant font-bengali">ব্যাংকের নাম:</p>
+                      <p className="font-bold text-on-surface font-bengali">{data.donationInfo?.bankName}</p>
+                    </div>
+                    <div>
+                      <p className="text-on-surface-variant font-bengali">একাউন্ট নাম:</p>
+                      <p className="font-bold text-on-surface font-bengali">{data.donationInfo?.accountName}</p>
+                    </div>
+                    <div>
+                      <p className="text-on-surface-variant font-bengali">একাউন্ট নম্বর:</p>
+                      <p className="font-bold text-on-surface font-sans text-lg tracking-wider">{data.donationInfo?.accountNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-on-surface-variant font-bengali">শাখা:</p>
+                      <p className="font-bold text-on-surface font-bengali">{data.donationInfo?.branch}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Banking */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-pink-50 p-4 rounded-2xl border border-pink-100 flex flex-col items-center text-center">
+                    <img src="https://www.logo.wine/a/logo/BKash/BKash-Logo.wine.svg" alt="bKash" className="h-10 mb-2" />
+                    <p className="text-xs text-pink-600 font-bold mb-1">বিকাশ (পার্সোনাল)</p>
+                    <p className="font-bold text-on-surface font-sans">{data.donationInfo?.bkash}</p>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100 flex flex-col items-center text-center">
+                    <img src="https://www.logo.wine/a/logo/Nagad/Nagad-Logo.wine.svg" alt="Nagad" className="h-10 mb-2" />
+                    <p className="text-xs text-orange-600 font-bold mb-1">নগদ (পার্সোনাল)</p>
+                    <p className="font-bold text-on-surface font-sans">{data.donationInfo?.nagad}</p>
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 flex flex-col items-center text-center">
+                    <div className="h-10 flex items-center justify-center mb-2">
+                      <span className="text-blue-600 font-bold text-xl">Rocket</span>
+                    </div>
+                    <p className="text-xs text-blue-600 font-bold mb-1">রকেট (পার্সোনাল)</p>
+                    <p className="font-bold text-on-surface font-sans">{data.donationInfo?.rocket}</p>
+                  </div>
+                </div>
+
+                <div className="text-center pt-4">
+                  <p className="text-on-surface-variant font-bengali text-sm">
+                    * টাকা পাঠানোর পর নিশ্চিত করতে মাদরাসা অফিসে যোগাযোগ করুন।
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

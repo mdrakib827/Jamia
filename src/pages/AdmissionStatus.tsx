@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { Search, CheckCircle2, XCircle, Clock, ArrowLeft, ChevronRight, X, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -30,7 +30,11 @@ export function AdmissionStatus() {
   };
 
   // Group admissions by Jamat
-  const jamats = Array.from(new Set(admissions.map(app => app.classToAdmit)));
+  const departments = [
+    { name: "হিফজ বিভাগ", classes: ["মক্কী", "মাদানী"] },
+    { name: "কিতাব বিভাগ", classes: ["খুসূসী", "ইবতেদায়ী", "মিজান", "মুতাওয়াসসিতাহ", "হেদায়াতুন নাহু", "সানাবিয়া", "সানাবিয়া উলিয়া", "ফজীলত ১", "ফজীলত ২", "তাকমীল"] },
+    { name: "মক্তব বিভাগ", classes: ["নার্সারী", "প্রথম", "দ্বিতীয়", "তৃতীয়"] }
+  ];
   
   const filteredAdmissions = admissions.filter(app => {
     const matchesJamat = selectedJamat ? app.classToAdmit === selectedJamat : true;
@@ -69,7 +73,7 @@ export function AdmissionStatus() {
           {/* Jamat List */}
           <div className="lg:col-span-1 space-y-4">
             <h2 className="text-xl font-bengali font-bold text-on-surface px-2">জামাত সমূহ</h2>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-6">
               <button
                 onClick={() => setSelectedJamat(null)}
                 className={`flex items-center justify-between px-5 py-4 rounded-2xl transition-all font-bengali font-bold ${
@@ -79,20 +83,28 @@ export function AdmissionStatus() {
                 সব জামাত
                 <ChevronRight size={18} />
               </button>
-              {jamats.map((jamat) => (
-                <button
-                  key={jamat}
-                  onClick={() => setSelectedJamat(jamat)}
-                  className={`flex items-center justify-between px-5 py-4 rounded-2xl transition-all font-bengali font-bold ${
-                    selectedJamat === jamat ? "bg-primary text-on-primary shadow-lg" : "bg-white border border-outline-variant/10 hover:bg-surface-container text-on-surface-variant"
-                  }`}
-                >
-                  {jamat}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs opacity-70">({admissions.filter(a => a.classToAdmit === jamat).length})</span>
-                    <ChevronRight size={18} />
+              
+              {departments.map((dept) => (
+                <div key={dept.name} className="space-y-2">
+                  <h3 className="text-sm font-bengali font-bold text-primary px-2 opacity-70 uppercase tracking-wider">{dept.name}</h3>
+                  <div className="flex flex-col gap-2">
+                    {dept.classes.map((jamat) => (
+                      <button
+                        key={jamat}
+                        onClick={() => setSelectedJamat(jamat)}
+                        className={`flex items-center justify-between px-5 py-4 rounded-2xl transition-all font-bengali font-bold ${
+                          selectedJamat === jamat ? "bg-primary text-on-primary shadow-lg" : "bg-white border border-outline-variant/10 hover:bg-surface-container text-on-surface-variant"
+                        }`}
+                      >
+                        {jamat}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs opacity-70">({admissions.filter(a => a.classToAdmit === jamat).length})</span>
+                          <ChevronRight size={18} />
+                        </div>
+                      </button>
+                    ))}
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
