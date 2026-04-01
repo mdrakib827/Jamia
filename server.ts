@@ -6,6 +6,7 @@ import multer from "multer";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
+import fetch from "node-fetch";
 
 dotenv.config();
 
@@ -16,10 +17,23 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
-// Supabase Client
-const supabaseUrl = process.env.SUPABASE_URL || "https://qxwulyakfmogddwtwgob.supabase.co";
-const supabaseKey = process.env.SUPABASE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4d3VseWFrZm1vZ2Rkd3R3Z29iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MTY4ODcsImV4cCI6MjA5MDI5Mjg4N30.CFbj9E_h5qi1rqV_43vLCsnREP4YWSD1Ou-IfXc8R60";
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Supabase Client - Hardcoded for reliability and using node-fetch explicitly
+const supabaseUrl = "https://bcxehzhddxqhpvqgwdkf.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeGVoemhkZHhxaHB2cWd3ZGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzIxNjIsImV4cCI6MjA5MDY0ODE2Mn0.wQNJjXw8S3UVC63XbZM37OgTC1IoIeaZXqo_mnZB_ds";
+
+console.log(`Initializing Supabase with URL: ${supabaseUrl}`);
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  global: {
+    fetch: (url, options) => {
+      console.log(`Supabase Fetching: ${url}`);
+      return fetch(url as any, options as any).catch(err => {
+        console.error(`Supabase Fetch Error for ${url}:`, err);
+        throw err;
+      });
+    }
+  }
+});
 
 // Simple data storage
 const DATA_FILE = path.join(process.cwd(), "data.json");
@@ -420,32 +434,65 @@ syncWithSupabase().then(() => {
 
 async function ensureSuperAdmin() {
   try {
+    console.log("Checking for super admin: mdrakibulislam827@gmail.com");
     const { data, error } = await supabase
       .from("users")
       .select("*")
       .eq("email", "mdrakibulislam827@gmail.com")
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === "42P01") {
+        console.error("CRITICAL: 'users' table does not exist in Supabase. Please run the SQL setup.");
+        return;
+      }
+      throw error;
+    }
 
     if (!data) {
-      console.log("Creating super admin...");
-      await supabase.from("users").insert([{
+      console.log("Super admin not found. Creating super admin with password: admin123");
+      const { error: insertError } = await supabase.from("users").insert([{
         email: "mdrakibulislam827@gmail.com",
         full_name: "Super Admin",
-        password: "admin",
+        password: "admin123",
+        role: "super_admin",
+        status: "approved"
+      }]);
+      if (insertError) console.error("Error creating super admin:", insertError);
+    } else {
+      console.log("Super admin found. Ensuring credentials (password: admin123)...");
+      const { error: updateError } = await supabase.from("users").update({ 
+        role: "super_admin", 
+        status: "approved",
+        password: "admin123" 
+      }).eq("email", "mdrakibulislam827@gmail.com");
+      if (updateError) console.error("Error updating super admin:", updateError);
+    }
+
+    // Also ensure admin@gmail.com exists for convenience
+    const { data: adminData } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", "admin@gmail.com")
+      .maybeSingle();
+
+    if (!adminData) {
+      await supabase.from("users").insert([{
+        email: "admin@gmail.com",
+        full_name: "Admin",
+        password: "admin123",
         role: "super_admin",
         status: "approved"
       }]);
     } else {
-      // Always ensure super admin has correct role, status and password if they are having trouble
-      console.log("Ensuring super admin credentials...");
       await supabase.from("users").update({ 
         role: "super_admin", 
         status: "approved",
-        password: "admin" 
-      }).eq("email", "mdrakibulislam827@gmail.com");
+        password: "admin123" 
+      }).eq("email", "admin@gmail.com");
     }
   } catch (err) {
-    console.error("Error ensuring super admin:", err);
+    console.error("Error in ensureSuperAdmin:", err);
   }
 }
 
@@ -694,6 +741,7 @@ app.post("/api/admissions/delete", async (req, res) => {
 
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
+  console.log(`Login attempt for: ${email}`);
   
   try {
     const { data: user, error } = await supabase
@@ -702,15 +750,34 @@ app.post("/api/login", async (req, res) => {
       .eq("email", email)
       .eq("password", password)
       .eq("status", "approved")
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      console.error("Supabase login error:", error);
+      return res.status(500).json({ success: false, error: `সার্ভারে সমস্যা হচ্ছে: ${error.message}` });
+    }
 
     if (user) {
+      console.log(`Login successful for: ${email}`);
       res.json({ success: true, user: { email: user.email, role: user.role, name: user.full_name } });
     } else {
+      console.log(`Login failed for: ${email} - User not found or not approved`);
       res.status(401).json({ success: false, error: "ভুল ইমেইল/পাসওয়ার্ড অথবা আপনার অ্যাকাউন্টটি এখনও অ্যাপ্রুভ করা হয়নি।" });
     }
   } catch (err) {
+    console.error("Login exception:", err);
     res.status(500).json({ success: false, error: "সার্ভারে সমস্যা হচ্ছে।" });
+  }
+});
+
+// Debug route to check if users are being created
+app.get("/api/debug/users", async (req, res) => {
+  try {
+    const { data, error } = await supabase.from("users").select("email, role, status");
+    if (error) throw error;
+    res.json({ count: data.length, users: data });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
@@ -835,6 +902,18 @@ app.post("/api/forgot-password", async (req, res) => {
 app.use("/uploads", express.static(UPLOADS_DIR));
 
 async function startServer() {
+  console.log(`Node version: ${process.version}`);
+  try {
+    const testFetch = await fetch("https://www.google.com", { method: "HEAD" }).catch(e => ({ ok: false, error: e }));
+    if ('error' in testFetch) {
+      console.error("Internet connectivity test failed:", testFetch.error);
+    } else {
+      console.log(`Internet connectivity test: ${testFetch.ok ? "Success" : "Failed"}`);
+    }
+  } catch (e) {
+    console.error("Internet connectivity test exception:", e);
+  }
+
   // Ensure data is synced before starting
   await syncWithSupabase();
 
