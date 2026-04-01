@@ -17,23 +17,13 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
-// Supabase Client - Hardcoded for reliability and using node-fetch explicitly
+// Supabase Client - Hardcoded for reliability
 const supabaseUrl = "https://bcxehzhddxqhpvqgwdkf.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjeGVoemhkZHhxaHB2cWd3ZGtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwNzIxNjIsImV4cCI6MjA5MDY0ODE2Mn0.wQNJjXw8S3UVC63XbZM37OgTC1IoIeaZXqo_mnZB_ds";
 
 console.log(`Initializing Supabase with URL: ${supabaseUrl}`);
 
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  global: {
-    fetch: (url, options) => {
-      console.log(`Supabase Fetching: ${url}`);
-      return fetch(url as any, options as any).catch(err => {
-        console.error(`Supabase Fetch Error for ${url}:`, err);
-        throw err;
-      });
-    }
-  }
-});
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Simple data storage
 const DATA_FILE = path.join(process.cwd(), "data.json");
