@@ -60,7 +60,7 @@ const initialData = {
     {
       "id": 2,
       "date": "০৮",
-      "desc": "২026শিক্ষাবর্ষের সকল বিভাগে ভর্তিচ্ছু শিক্ষার্থীদের অনলাইন ও অফলাইনে আবেদন শুরু হয়েছে...",
+      "desc": "২০২৬ শিক্ষাবর্ষের সকল বিভাগে ভর্তিচ্ছু শিক্ষার্থীদের অনলাইন ও অফলাইনে আবেদন শুরু হয়েছে...",
       "month": "Dec",
       "title": "নতুন শিক্ষাবর্ষের ভর্তি কার্যক্রম শুরু"
     },
@@ -76,25 +76,35 @@ const initialData = {
     {
       "id": 1,
       "name": "মুফতী মুহাম্মদ ফয়জুল্লাহ দা. বা.",
-      "image": "https://picsum.photos/seed/teacher1/200/200",
-      "designation": "মুহতামিম"
+      "image": "https://picsum.photos/seed/teacher1/300/300",
+      "designation": "মুহতামিম",
+      "qualification": "দাওরায়ে হাদীস (মাস্টার্স), ইফতা (মুফতী)",
+      "specialization": "ফিকহ ও ফতোয়া",
+      "details": "তিনি দীর্ঘ ২০ বছর যাবত এই মাদরাসার মুহতামিম হিসেবে দায়িত্ব পালন করছেন। তার সুদক্ষ পরিচালনায় মাদরাসাটি অত্র অঞ্চলে দ্বীনি শিক্ষার এক নির্ভরযোগ্য প্রতিষ্ঠানে পরিণত হয়েছে।",
+      "phone": "01711000000",
+      "email": "principal@madrasa.com"
     },
     {
       "id": 2,
       "name": "মুফতী মুজ্জাম্মিল হক দা. বা.",
-      "email": "mdmozammelhoque171@gmail.com",
-      "image": "https://picsum.photos/seed/teacher2/200/200",
-      "phone": "01792756020",
+      "image": "https://picsum.photos/seed/teacher2/300/300",
       "designation": "নাজেমে তালিমাত",
-      "qualification": "মুফতী",
-      "specialization": "ফিকহ ও ফাতাওয়া"
+      "qualification": "দাওরায়ে হাদীস (মাস্টার্স), ইফতা (মুফতী)",
+      "specialization": "আরবি ভাষা ও সাহিত্য",
+      "details": "শিক্ষা সচিব হিসেবে তিনি মাদরাসার শিক্ষা সংক্রান্ত সকল কার্যক্রম তদারকি করেন। আরবি ভাষায় তার বিশেষ দক্ষতা রয়েছে।",
+      "phone": "01792756020",
+      "email": "mdmozammelhoque171@gmail.com"
     },
     {
       "id": 1774720089262,
       "name": "মুফতী লুৎফুর রহমান দা. বা.",
-      "image": "https://picsum.photos/seed/teacher3/200/200",
-      "details": "ুিতিকািতকাতকিুতকতুাকৃতকাতৃ",
-      "designation": "শাইখুল হাদীস"
+      "image": "https://picsum.photos/seed/teacher3/300/300",
+      "designation": "শাইখুল হাদীস",
+      "qualification": "দাওরায়ে হাদীস (মাস্টার্স)",
+      "specialization": "ইলমে হাদীস",
+      "details": "তিনি মাদরাসার শাইখুল হাদীস হিসেবে ইলমে হাদীসের খেদমত করে যাচ্ছেন। তার পাঠদান পদ্ধতি অত্যন্ত প্রাঞ্জল ও হৃদয়গ্রাহী।",
+      "phone": "01811000000",
+      "email": "hadith@madrasa.com"
     }
   ],
   "results": [
@@ -106,10 +116,10 @@ const initialData = {
       "year": "2024",
       "class": "হেফজ",
       "marks": {
-        "fiqh": 77,
-        "quran": 44,
-        "bangla": 55,
-        "hadith": 55
+        "ফিকহ": 77,
+        "কুরআন": 44,
+        "বাংলা": 55,
+        "হাদীস": 55
       },
       "total": 231,
       "position": 5,
@@ -123,10 +133,10 @@ const initialData = {
       "year": "২০২৪",
       "class": "তাইসির",
       "marks": {
-        "fiqh": 82,
-        "quran": 92,
-        "bangla": 96,
-        "hadith": 95
+        "ফিকহ": 82,
+        "কুরআন": 92,
+        "বাংলা": 96,
+        "হাদীস": 95
       },
       "total": 365,
       "position": 1,
@@ -140,10 +150,10 @@ const initialData = {
       "year": "২০২৪",
       "class": "মিজান",
       "marks": {
-        "fiqh": 95,
-        "quran": 50,
-        "bangla": 80,
-        "hadith": 90
+        "ফিকহ": 95,
+        "কুরআন": 50,
+        "বাংলা": 80,
+        "হাদীস": 90
       },
       "total": 315,
       "position": 4,
@@ -157,10 +167,10 @@ const initialData = {
       "year": "২০২৪",
       "class": "নাহবেমীর",
       "marks": {
-        "fiqh": 20,
-        "quran": 55,
-        "bangla": 44,
-        "hadith": 20
+        "ফিকহ": 20,
+        "কুরআন": 55,
+        "বাংলা": 44,
+        "হাদীস": 20
       },
       "total": 139,
       "position": 6,
@@ -174,10 +184,10 @@ const initialData = {
       "year": "২০২৪",
       "class": "হেদায়াতুন নাহু",
       "marks": {
-        "fiqh": 92,
-        "quran": 95,
-        "bangla": 85,
-        "hadith": 88
+        "ফিকহ": 92,
+        "কুরআন": 95,
+        "বাংলা": 85,
+        "হাদীস": 88
       },
       "total": 360,
       "position": 2,
@@ -191,10 +201,10 @@ const initialData = {
       "year": "২০২৪",
       "class": "কাফিয়া",
       "marks": {
-        "fiqh": 88,
-        "quran": 90,
-        "bangla": 82,
-        "hadith": 85
+        "ফিকহ": 88,
+        "কুরআন": 90,
+        "বাংলা": 82,
+        "হাদীস": 85
       },
       "total": 345,
       "position": 3,
@@ -224,24 +234,66 @@ const initialData = {
   "admissions": [
     {
       "id": 1774841146910,
-      "dob": "2025-02-05",
-      "roll": "55",
+      "year": "2025",
+      "studentNameBn": "আব্দুল্লাহ আল মামুন",
+      "studentNameEn": "ABDULLAH AL MAMUN",
+      "fatherName": "আব্দুল মতিন",
+      "motherName": "আমাতুল্লাহ",
+      "dob": "2015-02-05",
       "gender": "male",
       "status": "approved",
       "bloodGroup": "O+",
-      "fatherName": "Abdul motin",
-      "motherName": "Amatullah",
-      "submittedAt": "2026-03-30T03:25:46.910Z",
-      "classToAdmit": "মেশকাত",
-      "guardianName": "kldlkfa",
+      "roll": "১০১",
+      "department": "কিতাব বিভাগ",
+      "classToAdmit": "মিজান",
+      "nationality": "বাংলাদেশী",
+      "presentAddress": "কড়ৈয়াবাড়ী, বন্দর, নারায়ণগঞ্জ",
+      "permanentAddress": "কড়ৈয়াবাড়ী, বন্দর, নারায়ণগঞ্জ",
+      "village": "কড়ৈয়াবাড়ী",
+      "postOffice": "কড়ৈয়াবাড়ী",
+      "upazila": "বন্দর",
+      "district": "নারায়ণগঞ্জ",
       "contactNumber": "01719337228",
-      "studentNameBn": "আব্দুল্লাহ",
-      "studentNameEn": "abdullah",
-      "presentAddress": "ffff",
+      "guardianName": "আব্দুল মতিন",
       "guardianContact": "01719337228",
-      "permanentAddress": "ffff",
-      "previousInstitute": "dklkfl"
+      "previousInstitute": "স্থানীয় মক্তব",
+      "submittedAt": "2026-03-30T03:25:46.910Z",
+      "photoUrl": "https://picsum.photos/seed/student1/200/200"
+    },
+    {
+      "id": 1774841146911,
+      "year": "2025",
+      "studentNameBn": "ওমর ফারুক",
+      "studentNameEn": "OMAR FARUK",
+      "fatherName": "আবু বকর",
+      "motherName": "খাদিজা বেগম",
+      "dob": "2016-05-12",
+      "gender": "male",
+      "status": "approved",
+      "bloodGroup": "A+",
+      "roll": "১০২",
+      "department": "হিফজ বিভাগ",
+      "classToAdmit": "মাদানী",
+      "nationality": "বাংলাদেশী",
+      "presentAddress": "মদনপুর, বন্দর, নারায়ণগঞ্জ",
+      "permanentAddress": "মদনপুর, বন্দর, নারায়ণগঞ্জ",
+      "village": "মদনপুর",
+      "postOffice": "মদনপুর",
+      "upazila": "বন্দর",
+      "district": "নারায়ণগঞ্জ",
+      "contactNumber": "01811000000",
+      "guardianName": "আবু বকর",
+      "guardianContact": "01811000000",
+      "previousInstitute": "নূরাণী মাদরাসা",
+      "submittedAt": "2026-03-31T10:15:20.000Z",
+      "photoUrl": "https://picsum.photos/seed/student2/200/200"
     }
+  ],
+  "donations": [
+    { "id": 1, "name": "আব্দুর রহমান", "amount": 5000, "date": "2026-03-25", "message": "মাদরাসার উন্নয়নের জন্য", "category": "সাধারণ দান" },
+    { "id": 2, "name": "বেনামী দাতা", "amount": 10000, "date": "2026-03-26", "message": "লিল্লাহ ফান্ড", "category": "লিল্লাহ ফান্ড" },
+    { "id": 3, "name": "মোহাম্মদ আলী", "amount": 2000, "date": "2026-03-27", "message": "সাদকায়ে জারিয়া", "category": "সাদকা" },
+    { "id": 4, "name": "জাকির হোসেন", "amount": 15000, "date": "2026-03-28", "message": "মসজিদ ফান্ড", "category": "মসজিদ ফান্ড" }
   ],
   "admissionInfo": "2026 শিক্ষাবর্ষের ভর্তি কার্যক্রম শুরু হয়েছে। বিস্তারিত তথ্যের জন্য মাদরাসা অফিসে যোগাযোগ করুন।",
   "about": {
@@ -264,7 +316,7 @@ const initialData = {
   "departments": [
     { "title": "হিফজুল কুরআন বিভাগ", "desc": "সহীহ ও সুন্দর তিলাওয়াতের মাধ্যমে পবিত্র কুরআন হিফজ করার অনন্য বিভাগ।", "icon": "menu_book" },
     { "title": "মাওলানা কোর্স (দাওরায়ে হাদীস)", "desc": "কুরআন, সুন্নাহ ও ইসলামী ফিকহ-এর উপর উচ্চতর গবেষণামূলক মাস্টার্স সমমানের কোর্স।", "icon": "school" },
-    { "title": "ইফতা ও গবেষণা বিভাগ", "desc": "সমসাময়িক মাসআলা-মাসায়েল ও ফতোয়া প্রদানের বিশেষ প্রশিক্ষণ বিভাগ।", icon: "gavel" }
+    { "title": "ইফতা ও গবেষণা বিভাগ", "desc": "সমসাময়িক মাসআলা-মাসায়েল ও ফতোয়া প্রদানের বিশেষ প্রশিক্ষণ বিভাগ।", "icon": "gavel" }
   ],
   "transactions": [
     { "id": 1, "date": "2026-03-01", "type": "income", "category": "দান-সদকা", "amount": 50000, "description": "মাসিক সাধারণ দান" },
@@ -274,11 +326,11 @@ const initialData = {
   "donationInfo": {
     "bankName": "ইসলামী ব্যাংক বাংলাদেশ লিমিটেড",
     "accountName": "জামি‘আ ইসলামিয়া শামসুল উলূম",
-    "accountNumber": "২০৫০XXXXXXXXXXXXX",
+    "accountNumber": "২০৫০১৮১৮১০০০০০০০০",
     "branch": "বন্দর শাখা, নারায়ণগঞ্জ",
-    "bkash": "০১৭XXXXXXXX",
-    "nagad": "০১৭XXXXXXXX",
-    "rocket": "০১৭XXXXXXXX"
+    "bkash": "০১৭৯২৭৫৬০২০",
+    "nagad": "০১৭৯২৭৫৬০২০",
+    "rocket": "০১৭৯২৭৫৬০২০"
   },
   "admin": {
     "email": "admin@gmail.com",

@@ -13,10 +13,10 @@ import { AdminLogin } from "./pages/AdminLogin";
 import { AdminRegister } from "./pages/AdminRegister";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { DataProvider } from "./context/DataContext";
-import React from 'react';
+import * as React from 'react';
 
 // Error Boundary Component
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: string}> {
+class ErrorBoundary extends (React.Component as any) {
   constructor(props: any) {
     super(props);
     this.state = { hasError: false, error: '' };
